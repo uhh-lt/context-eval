@@ -180,7 +180,7 @@ def main():
     settings = parser.add_argument_group('Settings')
     settings.add_argument('-t', dest='TWSI_PATH', help='path to the TWSI2.0 folder (default: ./TWSI2_complete/)', required=False)
     settings.add_argument('-d', dest='debug', help='display debug output (default: False)', required=False)
-    settings.add_argument('-sep', dest='sep', help='separator between lemma and senseID in the inventory file (default: "_")', required=False, default='_')
+    settings.add_argument('-sep', dest='sep', help='separator between word and senseID in the inventory file (default: "_")', required=False)
     args = parser.parse_args()
     
     if args.sep:

@@ -1,6 +1,16 @@
 # contextualization-eval
 A tool for evaluation of contextualization (WSD) based on TWSI 2.0.
 
+Overview
+---------------------
+
+The tool evaluates Word Sense Disambiguation performance of a custom WSD system utilizing sentences and word senses (consisting of contextualized word substitutions) from the Turk Bootstrap Word Sense Inventory (TWSI 2.0; https://www.lt.informatik.tu-darmstadt.de/de/data/twsi-turk-bootstrap-word-sense-inventory/)
+
+First, it aligns the provided word sense inventory to TWSI senses. The alignment is calculated as the maximum overlap between related terms from a provided word sense to the substitutions from TWSI.
+After alignment, it calculates the precision, recall and F-score of the WSD system.
+
+
+
 Prerequesites
 ------------------------
 
@@ -62,4 +72,43 @@ Correct, retrieved, nr_sentences
     2	    13		143594
 Precision: 0.153846153846 	Recall: 0.39576 	F1: 0.221567
 
+```
+
+Data Format
+---------------
+
+As the system is directly working on the TWSI 2.0 data, it extracts the TWSI sense inventory and the evaluation data automatically. The uses only needs to provide a sense inventory and the predictions of his system.
+
+###Word Sense Inventory
+
+The sense inventory should be in two columns. The first column contains the sense identifier, consisting of the word and the sense ID, separated by a separator (default: '_').
+
+```
+Word'SEP'SenseID     list,of,related,words
+```
+####Example
+```
+mouse_0     mammalian,murine,Drosophila,human,vertebrate
+mouse_1     rat,mice,frog,sloth,rodent,koala,rabbit,lizard,cat
+mouse_2     joystick,keyboard,monitor,simulation,networks,hardware,cursor,graphics,worm,lab
+...
+```
+
+###Predictions
+
+The predictions contain two columns, first the sentence ID from TWSI, second the sense identifier (same identifier as in the word sense inventory).
+If the system was not able to assign a word sense id, this column can be empty.
+
+```
+SentenceID     Word'SEP'SenseID
+```
+####Example
+```
+17367113	   type_1
+17948117	   type_0
+19032445	   type_0
+19179157	   type_0
+19651374	   
+22028271	   type_0
+22585018	   type_1
 ```

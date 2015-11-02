@@ -16,6 +16,10 @@ Prerequesites
 
 You need to download and extract the TWSI2 dataset: https://www.lt.informatik.tu-darmstadt.de/de/data/twsi-turk-bootstrap-word-sense-inventory/
 
+You can extract the sentences as input for your WSD system by yourself or use the provided data in the data/ folder.
+
+Then you can run your contextualization system to get the predictions, and run the evaluation afterwards.
+
 
 
 Running evaluation script 
@@ -112,3 +116,30 @@ SentenceID     Word'SEP'SenseID
 22028271	   type_0
 22585018	   type_1
 ```
+
+
+###TWSI Contexts
+
+We provide the contents from TWSI 2.0 in their original format.
+
+```
+TWSI_SenseID   target_word    surface_form     sentenceID   tokenized_sentence   confidence_score
+```
+The sentences are tokenized and contain a '\<b\>' tag around the target word. Additionally, the target word and its surface form are listed in separate columns.
+
+####Example
+```
+ability@@1  	ability  	abilities   	10038908	   The following year , Harchester United reached the Semi Finals of the FA Cup and were also promoted back to the Premiership thanks to the fantastic goalscoring <b>abilities</b> of Karl Fletcher . 	   1.0
+```
+
+License
+-----------
+TWSI 2.0 is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported license (https://creativecommons.org/licenses/by-sa/3.0/). The combined TWSI 2.0 sentences are shared under the same license.
+
+The code of the evaluation script is under the Apache Software License (ASL) 2.0 (http://www.apache.org/licenses/LICENSE-2.0).
+
+
+References
+-------------
+* [Biemann and Nygaard, 2010] C. Biemann and V. Nygaard (2010): Crowdsourcing WordNet.  In Proceedings of the 5th Global WordNet conference, Mumbai, India. 
+* [Biemann, 2012] C. Biemann (2012): Turk Bootstrap Word Sense Inventory 2.0:  A Large-Scale Resource for Lexical Substitution. Proceedings of LREC 2012, Istanbul, Turkey.

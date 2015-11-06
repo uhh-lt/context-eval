@@ -46,7 +46,7 @@ This are instructions are for Ubuntu Linux, but the script should work well on M
     sudo apt-get install python-numpy python-scipy python-pandas
     ```
 
-4. Assign sense IDs to sentences in *file*
+4. Assign sense IDs to sentences in *data/twsi-contexts.csv* and save them to the file *predictions.csv*
 
 5. Run the evaluation:
 
@@ -55,7 +55,7 @@ This are instructions are for Ubuntu Linux, but the script should work well on M
     python twsi-evaluation.py -h
 
     # evaluate your predictions, based on your word sense inventory
-    python twsi-evaluation.py word_sense_inventory predictions
+    python twsi-evaluation.py word_sense_inventory.csv predictions.csv
     ```
     
     For evaluation, you need to provide the path to the TWSI2.0 dataset, if it is not in the same directory as the script.
@@ -83,7 +83,7 @@ Data Format
 
 As the system is directly working on the TWSI 2.0 data, it extracts the TWSI sense inventory and the evaluation data automatically. The uses only needs to provide a sense inventory and the predictions of his system.
 
-###Word Sense Inventory
+###Word Sense Inventory: data/word_sense_inventory.csv
 
 The sense inventory should be in two columns. The first column contains the sense identifier, consisting of the word and the sense ID, separated by a separator (default: '_').
 
@@ -98,7 +98,23 @@ mouse_2     joystick,keyboard,monitor,simulation,networks,hardware,cursor,graphi
 ...
 ```
 
-###Predictions
+
+### Input sentences: data/twsi-contexts.txt
+
+We provide the contents from TWSI 2.0 in their original format (tab separated).
+
+```
+TWSI_SenseID   target_word    surface_form     sentenceID   tokenized_sentence   confidence_score
+```
+The sentences are tokenized and contain a '\<b\>' tag around the target word. Additionally, the target word and its surface form are listed in separate columns.
+
+####Example
+```
+ability@@1  	ability  	abilities   	10038908	   The following year , Harchester United reached the Semi Finals of the FA Cup and were also promoted back to the Premiership thanks to the fantastic goalscoring <b>abilities</b> of Karl Fletcher . 	   1.0
+```
+
+
+###Predictions: data/predictions.csv
 
 The predictions contain two columns, first the sentence ID from TWSI, second the sense identifier (same identifier as in the word sense inventory).
 If the system was not able to assign a word sense id, this column can be empty.
@@ -115,21 +131,6 @@ SentenceID     Word'SEP'SenseID
 19651374	   
 22028271	   type_0
 22585018	   type_1
-```
-
-
-###TWSI Contexts
-
-We provide the contents from TWSI 2.0 in their original format.
-
-```
-TWSI_SenseID   target_word    surface_form     sentenceID   tokenized_sentence   confidence_score
-```
-The sentences are tokenized and contain a '\<b\>' tag around the target word. Additionally, the target word and its surface form are listed in separate columns.
-
-####Example
-```
-ability@@1  	ability  	abilities   	10038908	   The following year , Harchester United reached the Semi Finals of the FA Cup and were also promoted back to the Premiership thanks to the fantastic goalscoring <b>abilities</b> of Karl Fletcher . 	   1.0
 ```
 
 License

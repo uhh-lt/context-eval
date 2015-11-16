@@ -16,17 +16,20 @@ SEP = "_"
 TWSI_PATH = "./TWSI2_complete/"
 SUBST_PATH = "substitutions/raw_data/all-substitutions/"
 SENT_PATH = "contexts/"
+ASSIGNED_SENSES_FILE = "./data/TWSI-2.0-assigned-senses.txt"
 
 twsi_subst = dict()
-sense_assignments = dict()
+sense_mappings = dict()
 gold_labels = dict()
 predictions = dict()
+assigned_senses = dict()
 
 
 class TwsiSubst:
     def __init__(self,word):
         self.word = word
         self.terms = {}
+        self.scores = dict()
     
     def __eq__(self,other):
         return self.word == other
@@ -37,37 +40,63 @@ class TwsiSubst:
     def getSubst(self, num):
         return self.terms[num]
     
+    def getScores(self, num):
+        return self.scores[num]
+    
     def addTerm(self, num, term, count):
     	if not self.terms.has_key(num):
     	    self.terms[num] = dict()
-        self.terms[num][term] = count
+    	    self.scores[num] = 0
+    	if self.terms[num].has_key(term):
+    	    self.terms[num][term] = int(self.terms[num][term]) + int(count)
+    	else:
+    	    self.terms[num][term] = count
+        self.scores[num] += int(count)
         
     def getSenseIds(self):
         return self.terms.keys()
+       
+    def hasSenseId(self, num):
+        return (num in self.scores)
+
+
+
+def load_assigned_senses():
+    print "Loading assigned TWSI senses..."
+    global assigned_senses
+    assigned_senses = set(line.strip() for line in open(ASSIGNED_SENSES_FILE))
+    print "\nLoading done\n"
 
 def load_twsi_senses():
-    print "Loading TWSI senses..."
+    print "Loading TWSI sense inventory..."
     subst_files = []
     twsi_subst_p = join(TWSI_PATH,SUBST_PATH)
     files = [ f for f in listdir(twsi_subst_p) if isfile(join(twsi_subst_p,f)) ]
+    files_s = files.sort()
     for f in files:
     	print (f.split('.')[0]+'...'),
-        substitutions = read_csv(join(twsi_subst_p,f), '/\t+/', encoding='utf8', error_bad_lines=False, warn_bad_lines=False, header=None)
+        substitutions = read_csv(join(twsi_subst_p,f), '/\t+/', encoding='utf8', error_bad_lines=False, warn_bad_lines=True, header=None)
         word = f.split('.')[0]
         t_s = TwsiSubst(word)
         for i,s in substitutions.iterrows():
             twsi_sense, w, subst, count = s[0].split('\t')
+            if twsi_sense not in assigned_senses:
+            	if d and not re.match('.*\-$', twsi_sense):
+            	    print "removing TWSI sense "+twsi_sense+" as it did not occur in the sentences"
+                continue
             num = twsi_sense.split('@@')[1]
-            if num == '-' or re.match('\-\-', subst):
+            if num == '-' or re.match('\-\-', subst) or re.match('^\-', subst):
                 continue
             t_s.addTerm(num,subst,count)
-            
         twsi_subst[word] = t_s
     print "\nLoading done\n"
+    
 
 def load_sense_inventory(filename):
-    print "Loading Sense Inventory "+filename+"..."
-    inventory = read_csv(filename, '/\t+/', encoding='utf8', error_bad_lines=False, warn_bad_lines=False, header=None)
+    print "Loading provided Sense Inventory "+filename+"..."
+    mismatch = 0
+    match = 0
+    inventory = read_csv(filename, '/\t+/', encoding='utf8', error_bad_lines=False, warn_bad_lines=True, header=None)
     for r,inv in inventory.iterrows():
         ident, terms = inv[0].split('\t')
         word = ident.split(SEP)[0]
@@ -80,67 +109,82 @@ def load_sense_inventory(filename):
             scores = dict()
             for i in twsi.getSenseIds():
                 scores[i] = 0
-            for term in terms.split(','):
+            for term in set(terms.split(',')):
+            	term = term.strip()
                 # matching terms to TWSI sense ids
                 for i in twsi.getSenseIds():
                     subst = twsi.getSubst(i)
                     if subst.has_key(term):
-                        scores[i] += int(subst[term])
+                        scores[i] += float(subst[term]) / twsi.getScores(i)
                         if d:
-                            print "MATCH: "+ident+"\tID: "+i+"\t"+term+"\t"+subst[term]
+                            print "MATCH: "+ident+"\tID: "+i+"\t"+term+"\t"+str(subst[term])+"\t"+str(float(subst[term]) / twsi.getScores(i))
             # assignment
             assigned_id = get_max_score(scores)
-            sense_assignments[ident] = assigned_id
+            sense_mappings[ident] = assigned_id
             if d:
                 print "SCORES: "+str(scores)
                 print "ASSIGNED ID: "+ident+"\t"+str(assigned_id)
-            
+            t_i = ident.split(SEP)[1]
+            if not assigned_id == t_i:
+                print "no match for "+ word + " between " + str(t_i) + " and " + str(assigned_id) + "\n"
+                mismatch += 1
+            else:
+                match += 1
     print "\nLoading done\n"
+    print "There have been " + str(mismatch) + " mismatches and " + str(match) + " matches!" 
+     
 
 
 def load_gold_labels():
     print "Loading Gold Labels..."
     sent_files = []
     sent_p = join(TWSI_PATH,SENT_PATH)
-    files = [ f for f in listdir(sent_p) if isfile(join(sent_p,f)) ]
+    files = [ f for f in listdir(sent_p) if isfile(join(sent_p,f)) and not "DS" in f]
+    files.sort()
     for f in files:
     	print (f.split('.')[0]+'...'),
-        sentences = read_csv(join(sent_p,f), '/\t+/', encoding='utf8', error_bad_lines=False, warn_bad_lines=False)
+        sentences = read_csv(join(sent_p,f), '/\t+/', encoding='utf8', error_bad_lines=False, warn_bad_lines=True, header=None)
         word = f.split('.')[0]        
         for i,s in sentences.iterrows():
-            #print s[0].split('\t')
             sen = s[0].split('\t')
             twsi_sense = sen[0]
-            num = sen[3]
-            gold_labels[num] = twsi_sense
+            twsi_num = twsi_sense.split('@@')[1]
+            word = sen[1]
+            if not twsi_subst.get(word).hasSenseId(twsi_num):
+                if d:
+            	    print "No TWSI sense id '" + twsi_sense + "' in the inventory... Skipping sentence."
+                continue
+            ident = str(sen[3]) + str(sen[1])
+            gold_labels[ident] = twsi_sense
             
     print "\nLoading done\n"
 
 def evaluate_predicted_labels(filename):
-    print "Loading Predicted Labels "+filename+"..."
+    print "Evaluating Predicted Labels "+filename+"..."
     correct = 0
     retrieved = 0
+    checked = set()
     predictions = read_csv(filename, '/\t+/', encoding='utf8', error_bad_lines=False, warn_bad_lines=False, header=None)
     for i,p in predictions.iterrows():
-         if type(p[0]) is float:
-             continue
-         #print p[0].split('\t')
          pred = p[0].split('\t')
-         key = pred[0]
-         oracle = pred[1]
+         key = str(pred[0]) + str(pred[1])
+         oracle = pred[2]
          oracle_p = oracle.split(SEP)[1]
-         if gold_labels.has_key(key):
+         if gold_labels.has_key(key) and key not in checked:
              twsi_id = gold_labels[key].split('@@')[1]
-             if twsi_id == sense_assignments[oracle]:
+             if oracle in sense_mappings and twsi_id == sense_mappings[oracle]:
                  correct += 1
-             if oracle_p > -1:
+             if oracle_p > -1: 
                  retrieved += 1
-             if d:
-                 print "Sentence: "+key+"\tPrediction: "+oracle+"\tGold: "+gold_labels[key]+"\tPredicted_TWSI_sense: "+str(sense_assignments[oracle])+"\tMatch:"+str(gold_labels[key].split('@@')[1] == sense_assignments[oracle])
-            	     
-         else:
-             print "Sentence not in gold data: "+key
-    print "\nLoading done\n"
+             if d:  
+             	 if oracle in sense_mappings:
+             	     print "Sentence: "+key+"\tPrediction: "+oracle+"\tGold: "+gold_labels[key]+"\tPredicted_TWSI_sense: "+str(sense_mappings[oracle])+"\tMatch:"+str(gold_labels[key].split('@@')[1] == sense_mappings[oracle])
+             	 else:
+             	     print "Sentence: "+key+"\tPrediction: "+oracle+"\tGold: "+gold_labels[key]+"\tPredicted_TWSI_sense: "+"none"+"\tMatch: False"
+             checked.add(key)   	     
+         elif d:
+             print "Sentence not in gold data: "+key+" ... Skipping sentence for evaluation."
+    print "\nEvaluation done\n"
     return correct, retrieved
 
 
@@ -190,20 +234,19 @@ def main():
     if args.TWSI_PATH:               
         TWSI_PATH = args.TWSI_PATH	    
     
-    
+    load_assigned_senses()
     load_twsi_senses()
     load_sense_inventory(args.sense_file)
     load_gold_labels()
     correct, retrieved = evaluate_predicted_labels(args.predictions)
     
-    print "\nEvaluation:"
+    print "\nEvaluation Results:"
     print "Correct, retrieved, nr_sentences"
     print correct, "\t", retrieved, "\t", len(gold_labels)
     precision, recall, fscore = calculate_scores(correct, retrieved)
     print "Precision:",precision, "\tRecall:", recall, "\tF1:", fscore
     
 
- 
 
 
 if __name__ == '__main__':

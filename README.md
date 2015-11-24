@@ -52,17 +52,17 @@ This are instructions are for Ubuntu Linux, but the script should work well on M
 
     ```
     # check parameters
-    python twsi-evaluation.py -h
+    python twsi_evaluation.py -h
 
     # evaluate your predictions, based on your word sense inventory
-    python twsi-evaluation.py word_sense_inventory.csv predictions.csv
+    python twsi_evaluation.py word_sense_inventory.csv predictions.csv
     ```
     
     For evaluation, you need to provide the path to the TWSI2.0 dataset, if it is not in the same directory as the script.
     You can set it using the '-t' parameter:
     
     ```
-    python twsi-evaluation.py -t path-to/TWSI2_complete word_sense_inventory predictions
+    python twsi_evaluation.py -t path-to/TWSI2_complete word_sense_inventory predictions
 
     ```
     

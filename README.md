@@ -16,7 +16,7 @@ Prerequesites
 
 You need to download and extract the TWSI2 dataset: https://www.lt.informatik.tu-darmstadt.de/de/data/twsi-turk-bootstrap-word-sense-inventory/
 
-You can extract the sentences as input for your WSD system by yourself or use the provided data in the data/ folder.
+You can extract the sentences as input for your WSD system by yourself or use the provided data (Dataset-TWSI-2.0.csv) in the data/ folder.
 
 Then you can run your contextualization system to get the predictions, and run the evaluation afterwards.
 
@@ -46,7 +46,7 @@ This are instructions are for Ubuntu Linux, but the script should work well on M
     sudo apt-get install python-numpy python-scipy python-pandas
     ```
 
-4. Assign sense IDs to sentences in *data/twsi-contexts.csv* and save them to the file *predictions.csv*
+4. Assign sense IDs to sentences in *data/Dataset-TWSI-2.0.csv* and save them to the file *predictions.csv*
 
 5. Run the evaluation:
 
@@ -58,7 +58,7 @@ This are instructions are for Ubuntu Linux, but the script should work well on M
     python twsi_evaluation.py word_sense_inventory.csv predictions.csv
     ```
     
-    For evaluation, you need to provide the path to the TWSI2.0 dataset, if it is not in the same directory as the script.
+    For evaluation, you need to provide the path to the TWSI 2.0 dataset, if it is not in the same directory as the script.
     You can set it using the '-t' parameter:
     
     ```
@@ -71,19 +71,34 @@ Results of the evaluations are printed to stdout. Most essential metrics are als
 
 
 ```
-Evaluation:
+Evaluation Results:
 Correct, retrieved, nr_sentences
-    2	    13		143594
-Precision: 0.153846153846 	Recall: 0.39576 	F1: 0.221567
+25465 	63801 	  142644
+Precision: 0.399131675052 	Recall: 0.17852135386 	F1: 0.246700089612
+Coverage:  0.447274333305
+
 
 ```
 
 Data Format
 ---------------
 
-As the system is directly working on the TWSI 2.0 data, it extracts the TWSI sense inventory and the evaluation data automatically. The uses only needs to provide a sense inventory and the predictions of his system.
 
-###Word Sense Inventory: data/word_sense_inventory.csv
+
+###Input data format: *data/Dataset-TWSI-2.0.csv*
+To be able to run different evaluation scripts, the TWSI 2.0 data needs to be converted into a different format. Int the *data/* folder, you will find the transformed TWSI data. 
+
+```
+context_id  target-lemma   target_POS  target_position   gold_IDs predicted_IDs  gold_related_words   predicted_related_words context
+```
+####Example
+```
+10038908       ability n       160,169 ability@@1              aptitude:2, strength:4, talent:11, comprehension:1, function:2, competence:1, faculty:3, capability:33, capacity:29, skill:19             The following year , Harchester United reached the Semi Finals of the FA Cup and were also promoted back to the Premiership thanks to the fantastic goalscoring abilities of Karl Fletcher . 
+1418247        ability n       45,54   ability@@1              aptitude:2, strength:4, talent:11, comprehension:1, function:2, competence:1, faculty:3, capability:33, capacity:29, skill:19             He has also more than once overestimated his abilities or at times is often too naïve or cocky which usually results in a disadvantage during battle . 
+...
+```
+
+###Word Sense Inventory: *data/word_sense_inventory.csv*
 
 The sense inventory should be in two columns. The first column contains the sense identifier, consisting of the word and the sense ID, separated by a separator (default: '_').
 

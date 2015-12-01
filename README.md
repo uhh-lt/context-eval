@@ -47,6 +47,8 @@ This are instructions are for Ubuntu Linux, but the script should work well on M
     ```
 
 4. Assign sense IDs to sentences in *data/Dataset-TWSI-2.0.csv* and save them to the file *predictions.csv*
+5. 
+5. T
 
 5. Run the evaluation:
 

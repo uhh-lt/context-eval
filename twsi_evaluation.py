@@ -228,8 +228,11 @@ def get_max_score(scores):
     return max_id
 
 
-def calculate_evaluation_scores(correct, retrieved):
-    nr_sentences = len(gold_labels)
+def calculate_evaluation_scores(correct, retrieved, eval_retrieved = False):
+    if eval_retrieved:
+        nr_sentences = retrieved
+    else:
+        nr_sentences = len(gold_labels)
     precision = 0
     recall = 0
     if retrieved == 0:
@@ -299,8 +302,6 @@ def main():
     print "Precision:",precision, "\tRecall:", recall, "\tF1:", fscore
     print "Coverage: ", float(retrieved)/len(gold_labels)
     
-
-
 
 if __name__ == '__main__':
     main()

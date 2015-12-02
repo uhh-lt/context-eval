@@ -1,7 +1,10 @@
 #!/usr/bin/perl
 #
-use File::Copy qw(move);
 
+if ($#ARGV < 1) {
+	print "usage: perl transform-TWSI.pl TWSI-contexts-file TWSI-sense-inventory-file \n";
+	exit(1);
+}
 $input = $ARGV[0];
 
 $inventory = $ARGV[1];
@@ -13,24 +16,23 @@ $inventory = $ARGV[1];
 
 
 # file read
-open FILE, "$inventory" or die "Can't open file $inventory: $!\n";
+open SENSE, "$inventory" or die "Can't open file $inventory: $!\n";
 
 
 # store TWSI senses
-while (<FILE>) {  
+while (<SENSE>) {  
 	chomp;
 	@line = split(/\t/,$_);
 	$related_words{$line[0]} = $line[1];
 }
-close FILE;
-
-
+close SENSE;
 
 
 
 # file read
 open FILE, "$input" or die "Can't open file $input: $!\n";
 
+print "#context_id\ttarget\ttarget_pos\ttarget_position\tgold_sense_ids\tpredict_sense_ids\tgolden_related\tpredict_related\tcontext\n";
 
 # convert TWSI contexts
 while (<FILE>) {  

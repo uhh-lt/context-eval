@@ -10,52 +10,29 @@ First, it aligns the provided word sense inventory to TWSI senses. The alignment
 After alignment, it calculates the precision, recall and F-score of the WSD system.
 
 
-
-Prerequesites
-------------------------
-
-You need to download and extract the TWSI2 dataset: https://www.lt.informatik.tu-darmstadt.de/de/data/twsi-turk-bootstrap-word-sense-inventory/
-
-You can extract the sentences as input for your WSD system by yourself or use the provided data (Dataset-TWSI-2.0.csv) in the data/ folder.
-
-Then you can run your contextualization system to get the predictions, and run the evaluation afterwards.
-
-
-
-Running evaluation script 
+Evaluation based on TWSI dataset 
 --------------------
 
-This are instructions are for Ubuntu Linux, but the script should work well on Mac OSX and Windows as well (just install required dependencies). 
+1. Clone repository:
 
-
-1. Download the TWSI2 dataset from https://www.lt.informatik.tu-darmstadt.de/de/data/twsi-turk-bootstrap-word-sense-inventory/
-
-2. Download the evaluation script:
-
-   - Direct download from GitHub: https://github.com/tudarmstadt-lt/contextualization-eval/raw/master/twsi-evaluation.py
-   
-   - Clone the git repository:
-   
-       ```
-       git clone https://github.com/tudarmstadt-lt/contextualization-eval.git
-       ```
-
-3. Install required components
-
-    ```
-    sudo apt-get install python-numpy python-scipy python-pandas
+   ```
+    git clone https://github.com/tudarmstadt-lt/contextualization-eval.git
     ```
 
-4. Assign sense IDs to sentences in *data/Dataset-TWSI-2.0.csv* and save them to the file *predictions.csv*
+2. Install dependencies:
+    ```
+    pip install numpy scipy pandas
+    ```
 
-5. Run the evaluation:
+3. Fill with your program columns ```predict_sense_ids``` and ```predict_related``` in ```data/Dataset-TWSI-2.csv```. The first one contains a list of relevant sense identifiers for a given context and the second contains a list of contextually semantically related words. Check columns ```golden_sense_ids``` and ```golden_related``` for example. Data formats: https://github.com/tudarmstadt-lt/contextualization-eval#input-data-format-datadataset-twsi-20csv.
+
+4. Create your word sense inventory (needed for mapping senses to the gold standard word sense inventory):
+
+
+5. Evaluate your predictions, based on your word sense inventory:
 
     ```
-    # check parameters
-    python twsi_evaluation.py -h
-
-    # evaluate your predictions, based on your word sense inventory
-    python twsi_evaluation.py word_sense_inventory.csv predictions.csv
+    python twsi_evaluation.py word_sense_inventory.csv data/Dataset-TWSI-2.csv
     ```
     
     For evaluation, you need to provide the path to the TWSI 2.0 dataset, if it is not in the same directory as the script.
@@ -66,9 +43,7 @@ This are instructions are for Ubuntu Linux, but the script should work well on M
 
     ```
     
-
 Results of the evaluations are printed to stdout. Most essential metrics are also printed to stderr. You should see something like this:
-
 
 ```
 Evaluation Results:
@@ -100,23 +75,25 @@ context_id  target-lemma   target_POS  target_position   gold_IDs predicted_IDs 
 
 ###Word Sense Inventory: *data/word_sense_inventory.csv*
 
-The sense inventory should be in two columns. The first column contains the sense identifier, consisting of the word and the sense ID, separated by a separator (default: '_').
+The sense inventory should be in two columns. The first column contains the sense identifier, consisting of the word and the sense ID, separated by a separator (default: '_'). The second column contains a list of related terms. Each of the related terms can be weighted by a number.
 
 ```
-Word'SEP'SenseID     list,of,related,words
+Word'SEP'SenseID     list:5,of:3,related:1,words:1
 ```
 ####Example
 ```
-mouse_0     mammalian,murine,Drosophila,human,vertebrate
-mouse_1     rat,mice,frog,sloth,rodent,koala,rabbit,lizard,cat
-mouse_2     joystick,keyboard,monitor,simulation,networks,hardware,cursor,graphics,worm,lab
+mouse_0     mammalian:50,murine:20,Drosophila:10,human:9
+mouse_1     rat:200,mice:150,frog:80,sloth:50,rodent:40
+mouse_2     joystick:50,keyboard:33,monitor:25,simulation:15
 ...
 ```
+## TWSI Input data
 
+### Contexts: data/data/TWSI-2.0-all-contexts.txt
 
-### Input sentences: data/twsi-contexts.txt
+We provide the contents from TWSI 2.0 in their original format (tab separated). In the provided file, we have compiled all the contexts that TWSI 2.0 offers.
 
-We provide the contents from TWSI 2.0 in their original format (tab separated).
+Format:
 
 ```
 TWSI_SenseID   target_word    surface_form     sentenceID   tokenized_sentence   confidence_score
@@ -128,24 +105,40 @@ The sentences are tokenized and contain a '\<b\>' tag around the target word. Ad
 ability@@1  	ability  	abilities   	10038908	   The following year , Harchester United reached the Semi Finals of the FA Cup and were also promoted back to the Premiership thanks to the fantastic goalscoring <b>abilities</b> of Karl Fletcher . 	   1.0
 ```
 
+#### Extraction
 
-###Predictions: data/predictions.csv
-
-The predictions contain two columns, first the sentence ID from TWSI, second the sense identifier (same identifier as in the word sense inventory).
-If the system was not able to assign a word sense id, this column can be empty.
-
+To extract this data, you can just concatenate all the .context files from TWSI:
 ```
-SentenceID     Word'SEP'SenseID
+cat path/to/TWSI2_complete/contexts/*.contexts > data/TWSI-2.0-all-contexts.txt
 ```
+
+#### Conversion to common format
+
+To convert the TWSI format to the one used in our evaluation, you can use the utils/utils/transform-TWSI.pl script.
+It requires the TWSI contexts file as well as the TWSI sense inventory:
+```
+perl utils/transform-TWSI.pl data/TWSI-2.0-all-contexts.txt data/TWSI-2.0-sense-inventory.txt 
+```
+
+
+### TWSI Sense Inventory: data/TWSI-2.0-sense-inventory.txt 
+
+The TWSI sense inventory follows the format for sense inventories: https://github.com/tudarmstadt-lt/contextualization-eval#word-sense-inventory-dataword_sense_inventorycsv
+
+You can extract the TWSI sense inventory, by running the following command:
+
 ####Example
+
 ```
-17367113	   type_1
-17948117	   type_0
-19032445	   type_0
-19179157	   type_0
-19651374	   
-22028271	   type_0
-22585018	   type_1
+academic@@1	scholastic:21, educational:13, scholarly:9, university:5
+academic@@2	school:3, educational:2, scholastic:2, school calendar:1
+academic@@3	scholar:35, professor:11, academician:10, teacher:9, lecturer:8
+```
+
+####Extraction
+
+```
+find path/to/TWSI2_complete/substitutions/raw_data/all-substitutions/ -name \*.turk* | sort | xargs perl utils/extract-TWSI-inventory.pl > data/TWSI-2.0-sense-inventory.txt 
 ```
 
 License

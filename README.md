@@ -10,52 +10,29 @@ First, it aligns the provided word sense inventory to TWSI senses. The alignment
 After alignment, it calculates the precision, recall and F-score of the WSD system.
 
 
-
-Prerequesites
-------------------------
-
-You need to download and extract the TWSI2 dataset: https://www.lt.informatik.tu-darmstadt.de/de/data/twsi-turk-bootstrap-word-sense-inventory/
-
-You can extract the sentences as input for your WSD system by yourself or use the provided data (Dataset-TWSI-2.0.csv) in the data/ folder.
-
-Then you can run your contextualization system to get the predictions, and run the evaluation afterwards.
-
-
-
-Running evaluation script 
+Evaluation based on TWSI dataset 
 --------------------
 
-This are instructions are for Ubuntu Linux, but the script should work well on Mac OSX and Windows as well (just install required dependencies). 
+1. Clone repository:
 
-
-1. Download the TWSI2 dataset from https://www.lt.informatik.tu-darmstadt.de/de/data/twsi-turk-bootstrap-word-sense-inventory/
-
-2. Download the evaluation script:
-
-   - Direct download from GitHub: https://github.com/tudarmstadt-lt/contextualization-eval/raw/master/twsi-evaluation.py
-   
-   - Clone the git repository:
-   
-       ```
-       git clone https://github.com/tudarmstadt-lt/contextualization-eval.git
-       ```
-
-3. Install required components
-
-    ```
-    sudo apt-get install python-numpy python-scipy python-pandas
+   ```
+    git clone https://github.com/tudarmstadt-lt/contextualization-eval.git
     ```
 
-4. Assign sense IDs to sentences in *data/Dataset-TWSI-2.0.csv* and save them to the file *predictions.csv*. If possible, also add the related words to the predictions (see format: https://github.com/tudarmstadt-lt/contextualization-eval#input-data-format-datadataset-twsi-20csv)
+2. Install dependencies:
+    ```
+    pip install numpy scipy pandas
+    ```
 
-5. Run the evaluation:
+3. Fill with your program columns ```predict_sense_ids``` and ```predict_related``` in ```data/Dataset-TWSI-2.csv```. The first one contains a list of relevant sense identifiers for a given context and the second contains a list of contextually semantically related words. Check columns ```golden_sense_ids``` and ```golden_related``` for example. Data formats: https://github.com/tudarmstadt-lt/contextualization-eval#input-data-format-datadataset-twsi-20csv.
+
+4. Create your word sense inventory (needed for mapping senses to the gold standard word sense inventory):
+
+
+5. Evaluate your predictions, based on your word sense inventory:
 
     ```
-    # check parameters
-    python twsi_evaluation.py -h
-
-    # evaluate your predictions, based on your word sense inventory
-    python twsi_evaluation.py word_sense_inventory.csv predictions.csv
+    python twsi_evaluation.py word_sense_inventory.csv data/Dataset-TWSI-2.csv
     ```
     
     For evaluation, you need to provide the path to the TWSI 2.0 dataset, if it is not in the same directory as the script.
@@ -66,9 +43,7 @@ This are instructions are for Ubuntu Linux, but the script should work well on M
 
     ```
     
-
 Results of the evaluations are printed to stdout. Most essential metrics are also printed to stderr. You should see something like this:
-
 
 ```
 Evaluation Results:

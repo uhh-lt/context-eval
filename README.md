@@ -24,15 +24,14 @@ Evaluation based on TWSI dataset
     pip install numpy scipy pandas
     ```
 
-3. Fill with your program columns ```predict_sense_ids``` and ```predict_related``` in ```data/Dataset-TWSI-2.csv```. The first one contains a list of relevant sense identifiers for a given context and the second contains a list of contextually semantically related words. Check columns ```golden_sense_ids``` and ```golden_related``` for example. Data formats: https://github.com/tudarmstadt-lt/contextualization-eval#input-data-format-datadataset-twsi-20csv.
+3. Fill with your program columns ```predict_sense_ids``` and ```predict_related``` in ```data/Dataset-TWSI-2.csv``` and save it (you can use as an example ```data/Dataset-TWSI-2-sample.csv```). The first one contains a list of relevant sense identifiers for a given context and the second contains a list of contextually semantically related words. Check columns ```golden_sense_ids``` and ```golden_related``` for example. Data formats: https://github.com/tudarmstadt-lt/contextualization-eval#input-data-format-datadataset-twsi-20csv.
 
-4. Create your word sense inventory (needed for mapping senses to the gold standard word sense inventory):
+4. Create your word sense inventory needed for mapping senses to the gold standard word sense inventory. A sample file is available at: ```data/Inventory-sample.csv```
 
-
-5. Evaluate your predictions, based on your word sense inventory:
+5. Evaluate your predictions, based on your word sense inventory ```, e.g.:
 
     ```
-    python twsi_evaluation.py word_sense_inventory.csv data/Dataset-TWSI-2.csv
+    python twsi_evaluation.py data/Inventory-sample.csv data/Dataset-TWSI-2-sample.csv
     ```
     
     For evaluation, you need to provide the path to the TWSI 2.0 dataset, if it is not in the same directory as the script.

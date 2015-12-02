@@ -4,7 +4,7 @@ A tool for evaluation of contextualization (WSD) based on TWSI 2.0.
 Overview
 ---------------------
 
-The tool evaluates Word Sense Disambiguation performance of a custom WSD system utilizing sentences and word senses (consisting of contextualized word substitutions) from the Turk Bootstrap Word Sense Inventory (TWSI 2.0; https://www.lt.informatik.tu-darmstadt.de/de/data/twsi-turk-bootstrap-word-sense-inventory/)
+The tool evaluates Word Sense Disambiguation performance of a custom WSD system utilizing sentences and word senses (consisting of contextualized word substitutions) from the [Turk Bootstrap Word Sense Inventory TWSI 2.0](https://www.lt.informatik.tu-darmstadt.de/de/data/twsi-turk-bootstrap-word-sense-inventory/)
 
 First, it aligns the provided word sense inventory to TWSI senses. The alignment is calculated as the maximum overlap between related terms from a provided word sense to the substitutions from TWSI.
 After alignment, it calculates the precision, recall and F-score of the WSD system.

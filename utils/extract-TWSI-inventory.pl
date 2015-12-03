@@ -39,7 +39,7 @@ foreach $in (@ARGV) {
 
 	foreach $tid (sort keys (%twords)) {
 		if ($tid !~ "HASH") {
-			print "$word\@\@$tid\t";
+			print "$word\t$tid\t";
 			
 			%scores = {};
 			@subst = split(/,\s+/,$twords{$tid});

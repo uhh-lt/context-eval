@@ -18,7 +18,7 @@ VALSEP = ':'
 TWSI_PATH = "./TWSI2_complete/"
 SUBST_PATH = "substitutions/raw_data/all-substitutions/"
 SENT_PATH = "contexts/"
-ASSIGNED_SENSES_FILE = "./data/TWSI-2.0-assigned-senses.txt"
+ASSIGNED_SENSES_FILE = "./data/Senses-TWSI-2.csv"
 
 twsi_subst = dict()
 sense_mappings = dict()

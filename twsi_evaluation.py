@@ -70,9 +70,10 @@ class TwsiSubst:
         return (num in self.scores)
 
 
-# loads all the senses which were assigned in TWSI 2.0
-# assigned senses are stored in provided file
-# list of senses is used to remove all other senses, since they are impossible substitutions for the TWSI task
+""" 	loads all the senses which were assigned in TWSI 2.0
+	assigned senses are stored in provided file
+	list of senses is used to remove all other senses, since they are impossible substitutions for the TWSI task 
+"""
 def load_assigned_senses():
     print "Loading assigned TWSI senses..."
     global assigned_senses
@@ -80,8 +81,9 @@ def load_assigned_senses():
     print "Loading done\n"
 
 
-# loads all TWSI 2.0 senses from the TWSI dataset folder
-# filters senses by removing senses which do not occur in the TWSI data
+"""	loads all TWSI 2.0 senses from the TWSI dataset folder
+	filters senses by removing senses which do not occur in the TWSI data
+"""
 def load_twsi_senses():
     print "Loading TWSI sense inventory..."
     twsi_subst_p = join(TWSI_PATH,SUBST_PATH)
@@ -90,7 +92,8 @@ def load_twsi_senses():
     omitted = set()
     for f in files:
     	word = f.split('.')[0]
-    	print (word+'...'),
+    	if d:
+    	    print (word+'...'),
         substitutions = read_csv(join(twsi_subst_p,f), '/\t+/', encoding='utf8', header=None)
         # create new TwsiSubst for the given word
         t_s = TwsiSubst(word)
@@ -110,19 +113,17 @@ def load_twsi_senses():
     print "\nLoading done\n"
     
 
-# loads custom sense inventory
-# performs alignment using cosine similarity
+""" 	loads custom sense inventory
+	performs alignment using cosine similarity
+"""
 def load_sense_inventory(filename):
     print "Loading provided Sense Inventory "+filename+"..."
     inventory = read_csv(filename, '/\t+/', encoding='utf8', header=None)
     for r,inv in inventory.iterrows():
-        ident, terms = inv[0].split('\t')
-        word = ident.split(SEP)[0]
+        word, ident, terms = inv[0].split('\t')
         if word in twsi_subst:
             if d:
-                print "\nSENSE: "+ident
-            else:
-                print ident+"...",
+                print "\nSENSE: "+word+" "+ident
             twsi = twsi_subst.get(word)
             word_vec = dict()
             # split sense cluster into elements
@@ -151,8 +152,7 @@ def load_sense_inventory(filename):
             sense_mappings[ident] = assigned_id
             if d:
                 print "SCORES: "+str(scores)
-                print "ASSIGNED ID: "+ident+"\t"+str(assigned_id)
-            t_i = ident.split(SEP)[1]
+                print "ASSIGNED ID: "+word+" "+ident+"\t"+str(assigned_id)
     print "\nLoading done\n"
 
 
@@ -164,7 +164,8 @@ def load_gold_labels():
     files.sort()
     omitted = set()
     for f in files:
-    	print (f.split('.')[0]+'...'),
+    	if d:
+    	    print (f.split('.')[0]+'...'),
         sentences = read_csv(join(sent_p,f), '/\t+/', encoding='utf8', header=None)
         word = f.split('.')[0]        
         for i,s in sentences.iterrows():
@@ -178,7 +179,7 @@ def load_gold_labels():
             	    omitted.add(twsi_sense)
                 continue
             ident = str(sen[3]) + str(sen[1])
-            gold_labels[ident] = twsi_sense
+            gold_labels[word+ident] = twsi_sense
             
     print "\nLoading done\n"
 
@@ -249,7 +250,8 @@ def calculate_evaluation_scores(correct, retrieved, eval_retrieved = False):
     
         
 
-# computes cosine similarity between two vectors
+""" computes cosine similarity between two vectors
+"""
 def calculate_cosine(v1, v2):
     score = 0
     len1 = 0
@@ -266,6 +268,19 @@ def calculate_cosine(v1, v2):
     l2 = sqrt(len2)
     if l1 > 0 and l2 > 0:
         return score / (l1 * l2)
+    return 0
+    
+    
+""" computes the purity of a clustering
+"""
+def calculate_purity_clustering(c1, c2):
+    # for clustering c1:
+    	# get cluster
+    	# calcucate purity(v1, v2)
+    return 0
+    	
+def calculate_purity(v1, v2):
+    #
     return 0
     
 

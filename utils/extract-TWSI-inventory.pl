@@ -23,7 +23,7 @@ foreach $in (@ARGV) {
 			if ($id > $maxid){$maxid=$id};
 			$word = $line[1];
 
-			if ($line[2] =~ m/\-\-/ || $line[2] =~ m/^\-$/ || $line[2] =~ m/\"/) {next;} 
+			if ($line[2] =~ m/\-\-/ || $line[2] =~ m/^\-$/ || $line[2] =~ m/\"/ || $line[2] =~ m/\,/) {next;} 
 			
 			if (!exists $twords{$id}) {
 				$twords{$id} = $line[2].":".$line[3];

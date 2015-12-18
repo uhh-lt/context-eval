@@ -67,23 +67,24 @@ context_id  target-lemma   target_POS  target_position   gold_IDs predicted_IDs 
 ```
 ####Example
 ```
-10038908       ability n       160,169 ability@@1              aptitude:2, strength:4, talent:11, comprehension:1, function:2, competence:1, faculty:3, capability:33, capacity:29, skill:19             The following year , Harchester United reached the Semi Finals of the FA Cup and were also promoted back to the Premiership thanks to the fantastic goalscoring abilities of Karl Fletcher . 
-1418247        ability n       45,54   ability@@1              aptitude:2, strength:4, talent:11, comprehension:1, function:2, competence:1, faculty:3, capability:33, capacity:29, skill:19             He has also more than once overestimated his abilities or at times is often too naïve or cocky which usually results in a disadvantage during battle . 
+10038908       ability n       160,169 1              aptitude:2, strength:4, talent:11, comprehension:1, function:2, competence:1, faculty:3, capability:33, capacity:29, skill:19             The following year , Harchester United reached the Semi Finals of the FA Cup and were also promoted back to the Premiership thanks to the fantastic goalscoring abilities of Karl Fletcher . 
+1418247        ability n       45,54   1              aptitude:2, strength:4, talent:11, comprehension:1, function:2, competence:1, faculty:3, capability:33, capacity:29, skill:19             He has also more than once overestimated his abilities or at times is often too naïve or cocky which usually results in a disadvantage during battle . 
 ...
 ```
 
 ###Word Sense Inventory: *data/word_sense_inventory.csv*
 
-The sense inventory should be in two columns. The first column contains the sense identifier, consisting of the word and the sense ID, separated by a separator (default: '_'). The second column contains a list of related terms. Each of the related terms can be weighted by a number.
+The sense inventory should be in two columns. The first column contains the word lemma, the second column contains the sense identifier for the lemma.
+In the third columns, there is a list of related terms. Each of the related terms can be weighted by a number. These numbers are separated by colons ':'.
 
 ```
-Word'SEP'SenseID     list:5,of:3,related:1,words:1
+Word  SenseID  list:5,of:3,related:1,words:1
 ```
 ####Example
 ```
-mouse_0     mammalian:50,murine:20,Drosophila:10,human:9
-mouse_1     rat:200,mice:150,frog:80,sloth:50,rodent:40
-mouse_2     joystick:50,keyboard:33,monitor:25,simulation:15
+mouse 0        mammalian:50,murine:20,Drosophila:10,human:9
+mouse 1        rat:200,mice:150,frog:80,sloth:50,rodent:40
+mouse 2        joystick:50,keyboard:33,monitor:25,simulation:15
 ...
 ```
 ## TWSI Input data

@@ -2,7 +2,7 @@
 #
 
 if ($#ARGV < 1) {
-	print "usage: perl transform-TWSI.pl TWSI-contexts-file TWSI-sense-inventory-file \n";
+	print "usage: perl TWSI-create-GOLD-baseline.pl TWSI-contexts-file TWSI-sense-inventory-file \n";
 	exit(1);
 }
 $input = $ARGV[0];
@@ -10,8 +10,8 @@ $input = $ARGV[0];
 $inventory = $ARGV[1];
 
 
-# usage: 	perl transform-TWSI.pl TWSI-contexts TWSI-sense-inventory 
-# e.g:		perl ./utils/transform-TWSI.pl ./data/TWSI-2.0-all-contexts.txt ./data/Inventory-TWSI-2.csv
+# usage: 	perl TWSI-create-GOLD-baseline.pl TWSI-contexts TWSI-sense-inventory 
+# e.g:		perl ./utils/TWSI-create-GOLD-baseline.pl ./data/TWSI-2.0-all-contexts.txt ./data/Inventory-TWSI-2.csv
 
 
 # file read
@@ -47,7 +47,7 @@ while (<FILE>) {
 	$context =~ s/\<\/?b\>//g;
 	                                            
 	@id = split(/\@\@/, $line[0]);
-	print "$line[3]\t$line[1]\tn\t$start,$end\t$id[1]\t\t$related_words{$line[0]}\t\t$context\n";
+	print "$line[3]\t$line[1]\tn\t$start,$end\t$id[1]\t$id[1]\t$related_words{$line[0]}\t$related_words{$line[0]}\t$context\n";
 
 }
 close FILE;

@@ -1,6 +1,3 @@
-# usage :
-# find path/to/TWSI2_complete/substitutions/raw_data/all-substitutions/ -name \*.turk* | sort | xargs perl utils/extract-TWSI-inventory.pl
-
 
 # take only polysemous words
 $poly = 0;

@@ -31,8 +31,8 @@ close SENSE;
 # file read
 open FILE, "$input" or die "Can't open file $input: $!\n";
 
-print "#context_id\ttarget\ttarget_pos\ttarget_position\tgold_sense_ids\tpredict_sense_ids\tgolden_related\tpredict_related\tcontext\n";
-
+print "context_id\ttarget\ttarget_pos\ttarget_position\tgold_sense_ids\tpredict_sense_ids\tgolden_related\tpredict_related\tcontext\n";
+$c =1;
 # convert TWSI contexts
 while (<FILE>) {  
 	chomp;
@@ -40,14 +40,23 @@ while (<FILE>) {
 	if ($#line != 5) {
 		print $#line;
 		exit(1);
-	}
+	}	
 	$context = $line[4];
 	$start = index($context, "<b>");
 	$end = $start+length($line[2]);
 	$context =~ s/\<\/?b\>//g;
 	                                            
 	@id = split(/\@\@/, $line[0]);
-	print "$line[3]\t$line[1]\tn\t$start,$end\t$id[1]\t\t$related_words{$line[0]}\t\t$context\n";
+	
+	# check for duplicate entries
+	if (exists($processedEntries{"$line[3]$line[2]"}) && $processedEntries{"$line[3]$line[2]"} == $id[1]) {
+		print STDERR "duplicate entry $c: Sentence ID: $line[3]\tTarget Lemma: $line[1]\n";
+		$c++;
+		next;
+	} else {
+		print "$line[3]\t$line[1]\tn\t$start,$end\t$id[1]\t\t$related_words{$line[0]}\t\t$context\n";
+		$processedEntries{"$line[3]$line[2]"} = $id[1];
+	}
 
 }
 close FILE;

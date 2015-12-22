@@ -195,9 +195,9 @@ def evaluate_predicted_labels(filename):
                  retrieved += 1
              if d:  
              	 if oracle in sense_mappings:
-             	     print "Sentence: "+key+"\tPrediction: "+oracle+"\tGold: "+gold_labels[key]+"\tPredicted_TWSI_sense: "+str(sense_mappings[oracle])+"\tMatch:"+str(gold_labels[key].split('@@')[1] == sense_mappings[oracle])
+             	     print "Sentence: "+key+"\tPrediction: "+oracle+"\tGold: "+key+"\tPredicted_TWSI_sense: "+str(sense_mappings[oracle])+"\tMatch:"+str(gold == sense_mappings[oracle])
              	 else:
-             	     print "Sentence: "+key+"\tPrediction: "+oracle+"\tGold: "+gold_labels[key]+"\tPredicted_TWSI_sense: "+"none"+"\tMatch: False"
+             	     print "Sentence: "+key+"\tPrediction: "+oracle+"\tGold: "+key+"\tPredicted_TWSI_sense: "+"none"+"\tMatch: False"
                 	     
          elif d:
              print "Sentence not in gold data: "+key+" ... Skipping sentence for evaluation."

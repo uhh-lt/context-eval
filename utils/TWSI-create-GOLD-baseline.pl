@@ -31,7 +31,7 @@ close SENSE;
 # file read
 open FILE, "$input" or die "Can't open file $input: $!\n";
 
-print "#context_id\ttarget\ttarget_pos\ttarget_position\tgold_sense_ids\tpredict_sense_ids\tgolden_related\tpredict_related\tcontext\n";
+print "context_id\ttarget\ttarget_pos\ttarget_position\tgold_sense_ids\tpredict_sense_ids\tgolden_related\tpredict_related\tcontext\n";
 
 # convert TWSI contexts
 while (<FILE>) {  

@@ -47,8 +47,15 @@ while (<FILE>) {
 	$context =~ s/\<\/?b\>//g;
 	                                            
 	@id = split(/\@\@/, $line[0]);
-	print "$line[3]\t$line[1]\tn\t$start,$end\t$id[1]\t$id[1]\t$related_words{$line[0]}\t$related_words{$line[0]}\t$context\n";
-
+	# check for duplicate entries
+	if (exists($processedEntries{"$line[3]$line[2]"}) && $processedEntries{"$line[3]$line[2]"} == $id[1]) {
+		print STDERR "duplicate entry $c: Sentence ID: $line[3]\tTarget Lemma: $line[1]\n";
+		$c++;
+		next;
+	} else {
+		print "$line[3]\t$line[1]\tn\t$start,$end\t$id[1]\t$id[1]\t$related_words{$line[0]}\t$related_words{$line[0]}\t$context\n";
+		$processedEntries{"$line[3]$line[2]"} = $id[1];
+	}
 }
 close FILE;
 

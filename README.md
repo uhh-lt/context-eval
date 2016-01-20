@@ -57,8 +57,6 @@ Coverage:  0.447274333305
 Data Format
 ---------------
 
-
-
 ###Input data format: *data/Dataset-TWSI-2.0.csv*
 To be able to run different evaluation scripts, the TWSI 2.0 data needs to be converted into a different format. Int the *data/* folder, you will find the transformed TWSI data. 
 

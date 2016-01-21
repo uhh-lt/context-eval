@@ -97,7 +97,8 @@ def load_assigned_senses():
 """
 def load_twsi_senses():
     print "Loading TWSI sense inventory..."
-    substitutions = read_csv(INVENTORY_FILE, '/\t+/', encoding='utf8', header=None)    
+    # otherwise a warning was shown, that c engine cannot be used because c engine cannot work with pattern as separators (or smth like this)
+    substitutions = read_csv(INVENTORY_FILE, '/\t+/', encoding='utf8', header=None, engine="python")  
     for i,s in substitutions.iterrows():
     	# create new TwsiSubst for the given word
     	word, t_id, subs = s[0].split('\t')
@@ -123,7 +124,7 @@ def load_sense_inventory(filename):
     mapping_f = "data/Mapping_"+split(INVENTORY_FILE)[1]+"_"+split(filename)[1]
     print "Mapping saved to "+mapping_f
     m_f = open(mapping_f, 'w')
-    inventory = read_csv(filename, '/\t+/', encoding='utf8', header=None)
+    inventory = read_csv(filename, '/\t+/', encoding='utf8', header=None, engine="python")
     for r,inv in inventory.iterrows():
         word, ident, terms = inv[0].split('\t')
         if word in twsi_subst:
@@ -138,14 +139,16 @@ def load_sense_inventory(filename):
             	el = el.strip()
             	# split element into word and score
             	el_split = el.rsplit(VALSEP, 1)
-            	word = el_split[0]
+            	# this command was overwriting the 'word' variable
+            	# semantic(word) = element of the inventory, semantic(word2) = element of the sense cluster representing the 'word'
+            	word2 = el_split[0]
             	if len(el_split) > 1 and not re.match('\D+', el_split[1]):
-            	    if word in word_vec:
-            	        word_vec[word] += float(el_split[1])
+            	    if word2 in word_vec:
+            	        word_vec[word2] += float(el_split[1])
             	    else:
-            	        word_vec[word] = float(el_split[1])
+            	        word_vec[word2] = float(el_split[1])
             	else:
-            	    word_vec[word] = 1.0
+            	    word_vec[word2] = 1.0
             	    
             # matching terms to TWSI sense ids
             scores = dict()
@@ -161,9 +164,11 @@ def load_sense_inventory(filename):
                
             # assignment
             assigned_id = get_max_score(scores)
-            sense_mappings[ident] = assigned_id
+            # assignment 'sense_mappings[ident] = ...' assumed ident's are unique over the whole inventory
+            sense_mappings[word+ident] = assigned_id
             if d:
                 print "SCORES: "+str(scores)
+                # now this output works correctly (previously outputted the last element of the sense cluster)
                 print "ASSIGNED ID: "+word+" "+ident+"\t"+str(assigned_id)
     print "\nLoading done\n"
 
@@ -177,7 +182,7 @@ def evaluate_predicted_labels(filename):
     retrieved = 0
     itemcount = 0
     checked = set()
-    predictions = read_csv(filename, '/\t+/', encoding='utf8', header=0)
+    predictions = read_csv(filename, '/\t+/', encoding='utf8', header=0, engine="python")
     for i,p in predictions.iterrows():
          pred = p[0].split('\t')
          key = str(pred[0])+str(pred[1])
@@ -186,16 +191,19 @@ def evaluate_predicted_labels(filename):
          itemcount += 1
          if oracle == "":
              print "Sentence "+pred[0]+": Key '"+oracle+"' without sense assignment\n"
-             oracle_p = -1
+             # typo? oracle_p mentioned nowhere else
+             # also keep 'oracle' a string
+             oracle = '-1'
          if key not in checked:
              checked.add(key)
-             if oracle in sense_mappings and gold == sense_mappings[oracle]:
+             # adaptation of get operation to sense_mapping according with the change in load_sense_inventory function
+             if pred[1] + oracle in sense_mappings and gold == sense_mappings[pred[1] + oracle]:
                  correct += 1
              if int(oracle) > -1: 
                  retrieved += 1
              if d:  
-             	 if oracle in sense_mappings:
-             	     print "Sentence: "+key+"\tPrediction: "+oracle+"\tGold: "+key+"\tPredicted_TWSI_sense: "+str(sense_mappings[oracle])+"\tMatch:"+str(gold == sense_mappings[oracle])
+             	 if pred[1] + oracle in sense_mappings:
+             	     print "Sentence: "+key+"\tPrediction: "+oracle+"\tGold: "+key+"\tPredicted_TWSI_sense: "+str(sense_mappings[pred[1] + oracle])+"\tMatch:"+str(gold == sense_mappings[pred[1] + oracle])
              	 else:
              	     print "Sentence: "+key+"\tPrediction: "+oracle+"\tGold: "+key+"\tPredicted_TWSI_sense: "+"none"+"\tMatch: False"
                 	     

@@ -112,7 +112,6 @@ def load_twsi_senses():
 def load_sense_inventory(filename):
     """ loads custom sense inventory performs alignment using cosine similarity """
 
-
     sense_mappings = {}
 
     print "Loading provided Sense Inventory " + filename + "..."
@@ -164,15 +163,20 @@ def load_sense_inventory(filename):
     return sense_mappings
 
 
-def evaluate_predicted_labels(filename):
+def evaluate_predicted_labels(lexsub_dataset_fpath, has_header=True):
     """ loads and evaluates the results """
 
-    print "Evaluating Predicted Labels " + filename + "..."
+    print "Evaluating Predicted Labels " + lexsub_dataset_fpath + "..."
     correct = 0
     retrieved = 0
     checked = set()
-    predictions = read_csv(filename, sep='\t', encoding='utf8')
-    for i, row in predictions.iterrows():
+    if has_header:
+        lexsub_dataset = read_csv(lexsub_dataset_fpath, sep='\t', encoding='utf8')
+    else:
+        lexsub_dataset = read_csv(lexsub_dataset_fpath, sep='\t', encoding='utf8', header=None,
+            names=["context_id","target","target_pos","target_position","gold_sense_ids","predict_sense_ids",
+                   "golden_related","predict_related","context"])
+    for i, row in lexsub_dataset.iterrows():
         context_id = row.context_id
         gold_sense_ids = unicode(row.gold_sense_ids)
         predicted_sense_ids = unicode(row.predict_sense_ids)
@@ -259,18 +263,20 @@ def calculate_cosine(v1, v2):
 
 def main():
     global DEBUG
-    parser = argparse.ArgumentParser(
-        description='Evaluation script for contextualizations with a custom Word Sense Inventory.')
-    parser.add_argument('sense_file', metavar='inventory',
-                        help='word sense inventory file, format:\n word_senseID <tab> list,of,words')
-    parser.add_argument('predictions',
-                        help='word sense disambiguation predictions, format:\n sentenceID <tab> predicted-word_senseID')
-    settings = parser.add_argument_group('Settings')
-    settings.add_argument('-d', dest='debug', help='display debug output (default: False)', required=False)
+    parser = argparse.ArgumentParser(description='Evaluation script for contextualizations with a custom Word Sense Inventory.')
+    parser.add_argument('sense_file', metavar='inventory', help='word sense inventory file, format:\n word_senseID <tab> list,of,words')
+    parser.add_argument('predictions', help='word sense disambiguation predictions, format:\n sentenceID <tab> predicted-word_senseID')
+    # settings = parser.add_argument_group('Settings')
+    parser.add_argument('--debug', dest='debug', help='display debug output (default: False)', required=False)
+    parser.add_argument('--no_header', action='store_true', help='No headers. Default -- false.')
     args = parser.parse_args()
 
-    if args.debug:
-        DEBUG = args.debug
+    if args.debug: DEBUG = args.debug
+
+    print "Sense inventory:", args.sense_file
+    print "Lexical sample dataset:", args.predictions
+    print "No header:", args.no_header
+    print ""
 
     global _assigned_senses
     _assigned_senses = load_assigned_senses(TWSI_ASSIGNED_SENSES)
@@ -281,7 +287,7 @@ def main():
     global _sense_mappings
     _sense_mappings = load_sense_inventory(args.sense_file)
 
-    correct, retrieved, count = evaluate_predicted_labels(args.predictions)
+    correct, retrieved, count = evaluate_predicted_labels(args.predictions, has_header=(not args.no_header))
 
     print "\nEvaluation Results:"
     print "Correct, retrieved, nr_sentences"

@@ -44,10 +44,10 @@ class TWSI:
 
     # add a new substiution with score
     def addTerm(self, num, term, count):
-        if not self.terms.has_key(num):
+        if num not in self.terms:
             self.terms[num] = {}
             self.scores[num] = 0
-        if self.terms[num].has_key(term):
+        if term in self.terms[num]:
             self.terms[num][term] = int(self.terms[num][term]) + int(count)
         else:
             self.terms[num][term] = int(count)
@@ -61,14 +61,13 @@ class TWSI:
             key, val = s.split(SCORE_SEP)
             self.addTerm(num, key, val)
 
-            # list all sense ids
-
+    # list all sense ids
     def getSenseIds(self):
         return self.terms.keys()
 
     # does this sense id exist?
     def hasSenseId(self, num):
-        return (num in self.scores)
+        return num in self.scores
 
 
 def load_assigned_senses(assigned_senses_fpath):
@@ -86,7 +85,6 @@ def load_twsi_senses():
     """ loads all TWSI 2.0 senses from the TWSI dataset folder
     filters senses by removing senses which do not occur in the TWSI data """
 
-
     twsi_subst = {}
 
     print "Loading TWSI sense inventory..."
@@ -96,7 +94,7 @@ def load_twsi_senses():
         # create new TwsiSubst for the given word
         word, t_id, subs = s[0].split('\t')
         t_s = twsi_subst.get(word)
-        if t_s == None:
+        if t_s is None:
             t_s = TWSI(word)
         twsi_sense = word + "@@" + t_id
         if twsi_sense not in _assigned_senses:
@@ -111,7 +109,6 @@ def load_twsi_senses():
 
 def load_sense_inventory(filename):
     """ loads custom sense inventory performs alignment using cosine similarity """
-
 
     sense_mappings = {}
 
@@ -134,8 +131,10 @@ def load_sense_inventory(filename):
                 try:
                     word2, score2 = cluster_word_entry.strip().rsplit(SCORE_SEP, 1)
                     if not re.match('\D+', score2):
-                        if word2 in word_vec: word_vec[word2] += float(score2)
-                        else: word_vec[word2] = float(score2)
+                        if word2 in word_vec:
+                            word_vec[word2] += float(score2)
+                        else:
+                            word_vec[word2] = float(score2)
                     else:
                         word_vec[word2] = 1.0
                 except:
@@ -172,31 +171,38 @@ def evaluate_predicted_labels(filename):
     retrieved = 0
     checked = set()
     predictions = read_csv(filename, sep='\t', encoding='utf8')
+    i = -1
     for i, row in predictions.iterrows():
         context_id = row.context_id
         gold_sense_ids = unicode(row.gold_sense_ids)
-        predicted_sense_ids = unicode(row.predict_sense_ids)
+        if unicode(row.predict_sense_ids) == 'nan':
+            print "Sentence " + unicode(context_id) + ": Key '" + row.target + "' without sense assignment"
+            predicted_sense_ids = '-1'
+        else:
+            predicted_sense_ids = unicode(int(row.predict_sense_ids))
         key = unicode(context_id) + row.target
 
-        if predicted_sense_ids == "":
-            print "Sentence " + context_id + ": Key '" + predicted_sense_ids + "' without sense assignment\n"
-            predicted_sense_ids = '-1'
         if key not in checked:
             checked.add(key)
-            if row.target + predicted_sense_ids in _sense_mappings and gold_sense_ids == _sense_mappings[row.target + predicted_sense_ids]:
+            if row.target + predicted_sense_ids in _sense_mappings \
+                    and gold_sense_ids == _sense_mappings[row.target + predicted_sense_ids]:
                 correct += 1
-            if int(predicted_sense_ids) > -1:
+            if int(float(predicted_sense_ids)) > -1:
                 retrieved += 1
             if DEBUG:
                 if row.target + predicted_sense_ids in _sense_mappings:
-                    print "Sentence: " + key + "\tPrediction: " + predicted_sense_ids + "\tGold: " + key + "\tPredicted_TWSI_sense: " + str(
-                        _sense_mappings[row.target + predicted_sense_ids]) + "\tMatch:" + str(gold_sense_ids == _sense_mappings[row.target + predicted_sense_ids])
+                    print "Sentence: " + key + "\tPrediction: " + predicted_sense_ids + \
+                          "\tGold: " + key + \
+                          "\tPredicted_TWSI_sense: " + str(_sense_mappings[row.target + predicted_sense_ids]) + \
+                          "\tMatch:" + str(gold_sense_ids == _sense_mappings[row.target + predicted_sense_ids])
                 else:
-                    print "Sentence: " + key + "\tPrediction: " + predicted_sense_ids + "\tGold: " + key + "\tPredicted_TWSI_sense: " + "none" + "\tMatch: False"
+                    print "Sentence: " + key + "\tPrediction: " + predicted_sense_ids + \
+                          "\tGold: " + key + \
+                          "\tPredicted_TWSI_sense: " + "none" + \
+                          "\tMatch: False"
 
         elif DEBUG:
             print "Sentence not in gold data: " + key + " ... Skipping sentence for evaluation."
-    print "\nEvaluation done\n"
     return correct, retrieved, i+1
 
 
@@ -219,6 +225,7 @@ def calculate_evaluation_scores(correct, retrieved, itemcount, eval_retrieved=Fa
         itemcount = retrieved
     precision = 0
     recall = 0
+    fscore = 0
     if retrieved == 0:
         print "No predictions were retrieved!"
     else:
@@ -229,11 +236,9 @@ def calculate_evaluation_scores(correct, retrieved, itemcount, eval_retrieved=Fa
     else:
         recall = float(correct) / itemcount
 
-    print precision, recall, correct, itemcount, retrieved
-    fscore = 2 * precision * recall / (precision + recall)
+    if precision > 0 and recall > 0:
+        fscore = 2 * precision * recall / (precision + recall)
     return precision, recall, fscore
-
-
 
 
 def calculate_cosine(v1, v2):
@@ -280,7 +285,6 @@ def main():
 
     global _sense_mappings
     _sense_mappings = load_sense_inventory(args.sense_file)
-
     correct, retrieved, count = evaluate_predicted_labels(args.predictions)
 
     print "\nEvaluation Results:"

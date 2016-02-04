@@ -170,15 +170,15 @@ def evaluate_predicted_labels(lexsub_dataset_fpath, has_header=True):
     correct = 0
     retrieved = 0
     checked = set()
-    predictions = read_csv(filename, sep='\t', encoding='utf8')
-    i = -1
-    for i, row in predictions.iterrows():
+
     if has_header:
         lexsub_dataset = read_csv(lexsub_dataset_fpath, sep='\t', encoding='utf8')
     else:
         lexsub_dataset = read_csv(lexsub_dataset_fpath, sep='\t', encoding='utf8', header=None,
             names=["context_id","target","target_pos","target_position","gold_sense_ids","predict_sense_ids",
                    "golden_related","predict_related","context"])
+
+    i = -1
     for i, row in lexsub_dataset.iterrows():
         context_id = row.context_id
         gold_sense_ids = unicode(row.gold_sense_ids)
@@ -274,7 +274,6 @@ def main():
     parser = argparse.ArgumentParser(description='Evaluation script for contextualizations with a custom Word Sense Inventory.')
     parser.add_argument('sense_file', metavar='inventory', help='word sense inventory file, format:\n word_senseID <tab> list,of,words')
     parser.add_argument('predictions', help='word sense disambiguation predictions, format:\n sentenceID <tab> predicted-word_senseID')
-    # settings = parser.add_argument_group('Settings')
     parser.add_argument('--debug', dest='debug', help='display debug output (default: False)', required=False)
     parser.add_argument('--no_header', action='store_true', help='No headers. Default -- false.')
     args = parser.parse_args()
@@ -294,7 +293,7 @@ def main():
 
     global _sense_mappings
     _sense_mappings = load_sense_inventory(args.sense_file)
-    correct, retrieved, count = evaluate_predicted_labels(args.predictions)
+    correct, retrieved, count = evaluate_predicted_labels(args.predictions, has_header=(not args.no_header))
 
     print "\nEvaluation Results:"
     print "Correct, retrieved, nr_sentences"

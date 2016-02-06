@@ -13,7 +13,7 @@ golden=$1
 system_dataset=$2  
 sense_mapping=""  # or "--no-remapping" for .wn.
 
-python ./semeval_2013_13/dataset2key.py $system_dataset "$system_dataset.key" 
+python ./semeval_2013_13/dataset2key.py $system_dataset "$system_dataset.key" # --no_header if needed
 
 for metric in edu.ucla.clustercomparison.cl.JaccardIndexScorer edu.ucla.clustercomparison.cl.WeightedNdcgScorer  edu.ucla.clustercomparison.cl.WeightedTauScorer edu.ucla.clustercomparison.FuzzyNormalizedMutualInformation edu.ucla.clustercomparison.FuzzyBCubed
 do

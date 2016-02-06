@@ -1,4 +1,4 @@
-# Context-Eval: evaluation tools for unsupervised word sense disambiguation system
+# Context-Eval: Evaluation Tools for Unsupervised Knowledge-Free  Word Sense Disambiguation Systems
 
 This repository contains tools for evaluation of unsupervised word sense disambiguation (WSD) and lexical substitution also known as systems aka "contextualization" system. The scripts are based on TWSI 2.0 and SemEval 2013 datasets.  
 
@@ -18,9 +18,9 @@ This repository contains tools for evaluation of unsupervised word sense disambi
 Installation
 ============
 
-1. Clone repository
-2. Make sure the default Python is 2.7. Currently Python 3 is not supported. The script was tested on Mac OSX and Linux. In principle, it should work on Windows under Cygwin.
-3. Install dependencies: ```pip install pandas```
+1. Clone repository.
+2. Make sure that environment is setup: The default Python should be is 2.7. Currently Python 3 is not supported. The script was tested on Mac OSX and Linux. In principle, it should work on Windows under Cygwin. The script also requires Java 1.7 or higher. 
+3. Install dependencies: ```pip install pandas```.
 
 
 SemEval 2013 Task 13 Evaluation

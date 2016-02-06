@@ -1,5 +1,46 @@
-# contextualization-eval
-A tool for evaluation of contextualization (WSD) based on TWSI 2.0.
+# Context-Eval: evaluation tools for unsupervised word sense disambiguation system
+
+This repository contains tools for evaluation of unsupervised word sense disambiguation (WSD) and lexical substitution also known as systems aka "contextualization" system. The scripts are based on TWSI 2.0 and SemEval 2013 datasets.  
+
+```
+:'######:::'#######::'##::: ##:'########:'########:'##::::'##:'########::::::::::'########:'##::::'##::::'###::::'##:::::::
+'##... ##:'##.... ##: ###:: ##:... ##..:: ##.....::. ##::'##::... ##..::::::::::: ##.....:: ##:::: ##:::'## ##::: ##:::::::
+ ##:::..:: ##:::: ##: ####: ##:::: ##:::: ##::::::::. ##'##:::::: ##::::::::::::: ##::::::: ##:::: ##::'##:. ##:: ##:::::::
+ ##::::::: ##:::: ##: ## ## ##:::: ##:::: ######:::::. ###::::::: ##::::'#######: ######::: ##:::: ##:'##:::. ##: ##:::::::
+ ##::::::: ##:::: ##: ##. ####:::: ##:::: ##...:::::: ## ##:::::: ##::::........: ##...::::. ##:: ##:: #########: ##:::::::
+ ##::: ##: ##:::: ##: ##:. ###:::: ##:::: ##:::::::: ##:. ##::::: ##::::::::::::: ##::::::::. ## ##::: ##.... ##: ##:::::::
+. ######::. #######:: ##::. ##:::: ##:::: ########: ##:::. ##:::: ##::::::::::::: ########:::. ###:::: ##:::: ##: ########:
+:......::::.......:::..::::..:::::..:::::........::..:::::..:::::..::::::::::::::........:::::...:::::..:::::..::........::
+
+```
+
+
+Installation
+============
+
+1. Clone repository
+2. Make sure the default Python is 2.7. Currently Python 3 is not supported. The script was tested on Mac OSX and Linux. In principle, it should work on Windows under Cygwin.
+3. Install dependencies: ```pip install pandas```
+
+
+SemEval 2013 Task 13 Evaluation
+==================
+
+1. Fill column ```predict_sense_ids``` of the lexical sample dataset ```data/Dataset-SemEval-2013-13.csv```. Example of the result: https://github.com/tudarmstadt-lt/contextualization-eval/blob/master/data/Dataset-SemEval-2013-13-clean-lemma-model-alpha-05-norelated.csv
+
+2. Run the evaluation script:
+
+  ```
+  usage: semeval_2013_13.sh <path-to-golden.key> <path-to-system.dataset>
+  example: semeval_2013_13.sh semeval_2013_13/keys/gold/all.key data/Dataset-SemEval-2013-13-adagram-ukwac-wacky-raw.csv
+  ```
+
+  Evaluation scores will be printed to standard output. 
+
+  For more details about the this evaluation dataset refer to: http://www.aclweb.org/website/old_anthology/S/S13/S13-2.pdf#page=326
+
+TWSI Evaluation
+==============
 
 Overview
 ---------------------

@@ -138,7 +138,7 @@ def load_sense_inventory(filename):
                     else:
                         word_vec[word2] = 1.0
                 except:
-                    print "Error:", cluster_word_entry
+                    print "Warning: wrong cluster word", cluster_word_entry
 
             # matching terms to TWSI sense ids
             scores = {}
@@ -184,7 +184,7 @@ def evaluate_predicted_labels(lexsub_dataset_fpath, has_header=True):
         gold_sense_ids = unicode(row.gold_sense_ids)
         if unicode(row.predict_sense_ids) == 'nan':
             print "Sentence " + unicode(context_id) + ": Key '" + row.target + "' without sense assignment"
-            predicted_sense_ids = '-1'
+            predicted_sense_ids = "-1"
         else:
             predicted_sense_ids = unicode(int(row.predict_sense_ids))
         key = unicode(context_id) + row.target

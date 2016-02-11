@@ -42,16 +42,12 @@ SemEval 2013 Task 13 Evaluation
 TWSI Evaluation
 ==============
 
-Overview
----------------------
-
 The tool evaluates Word Sense Disambiguation performance of a custom WSD system utilizing sentences and word senses (consisting of contextualized word substitutions) from the [Turk Bootstrap Word Sense Inventory TWSI 2.0](https://www.lt.informatik.tu-darmstadt.de/de/data/twsi-turk-bootstrap-word-sense-inventory/)
 
-First, it aligns the provided word sense inventory to TWSI senses. The alignment is calculated as the maximum overlap between related terms from a provided word sense to the substitutions from TWSI.
-After alignment, it calculates the precision, recall and F-score of the WSD system.
+First, it aligns the provided word sense inventory to TWSI senses. The alignment is calculated as the maximum overlap between related terms from a provided word sense to the substitutions from TWSI. After alignment, it calculates the precision, recall and F-score of the WSD system.
 
 
-Evaluation based on TWSI dataset 
+Evaluation 
 --------------------
 
 1. Clone repository:
@@ -65,35 +61,31 @@ Evaluation based on TWSI dataset
     pip install numpy scipy pandas
     ```
 
-3. Fill with your program columns ```predict_sense_ids``` and ```predict_related``` in ```data/Dataset-TWSI-2.csv``` and save it (you can use as an example ```data/Dataset-TWSI-2-sample.csv```). The first one contains a list of relevant sense identifiers for a given context and the second contains a list of contextually semantically related words. Check columns ```golden_sense_ids``` and ```golden_related``` for example. Data formats: https://github.com/tudarmstadt-lt/contextualization-eval#input-data-format-datadataset-twsi-20csv.
+3. Fill with your program columns ```predict_sense_ids``` and ```predict_related``` in ```data/Dataset-TWSI-2.csv``` and save it (you can use as an example ```data/Dataset-TWSI-2-sample.csv```). The first one contains a list of relevant sense identifiers for a given context and the second contains a list of contextually semantically related words. Check columns ```golden_sense_ids``` and ```golden_related``` for example. Data formats: https://github.com/tudarmstadt-lt/contextualization-eval#input-data-format-datadataset-twsi-20csv. If your system cannot confidently classify some sense i.e. implements a "reject option" during classification you can set ```-1``` in the ```predict_sense_id```. In this case coverage of your system will be less than 0.999. 
 
 4. Create your word sense inventory needed for mapping senses to the gold standard word sense inventory. A sample file is available at: ```data/Inventory-sample.csv```
 
 5. Evaluate your predictions, based on your word sense inventory ```, e.g.:
 
     ```
-    python twsi_evaluation.py data/Inventory-sample.csv data/Dataset-TWSI-2-sample.csv
+    python twsi_evaluation.py data/Inventory-TWSI-2.csv data/Dataset-TWSI-2-GOLD.csv.gz
     ```
-    
-    For evaluation, you need to provide the path to the TWSI 2.0 dataset, if it is not in the same directory as the script.
-    You can set it using the '-t' parameter:
+
+    If your Dataset-TWSI-2-GOLD.csv file has no header then use the following argument:
     
     ```
-    python twsi_evaluation.py -t path-to/TWSI2_complete word_sense_inventory predictions
+    python twsi_evaluation.py data/Inventory-TWSI-2.csv  data/Dataset-TWSI-2-GOLD-no-header.csv.gz --no_header
+    ```
+
+    Results of the evaluations are printed to stdout. Most essential metrics are also printed to stderr. You should see something like this:
 
     ```
-    
-Results of the evaluations are printed to stdout. Most essential metrics are also printed to stderr. You should see something like this:
-
-```
-Evaluation Results:
-Correct, retrieved, nr_sentences
-25465 	63801 	  142644
-Precision: 0.399131675052 	Recall: 0.17852135386 	F1: 0.246700089612
-Coverage:  0.447274333305
-
-
-```
+    Evaluation Results:
+    Correct, retrieved, nr_sentences
+    25465 	63801 	  142644
+    Precision: 0.399131675052 	Recall: 0.17852135386 	F1: 0.246700089612
+    Coverage:  0.447274333305
+    ```
 
 Data Format
 ---------------

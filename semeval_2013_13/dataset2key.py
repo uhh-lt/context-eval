@@ -20,10 +20,12 @@ def convert_dataset2semevalkey(dataset_fpath, output_fpath, no_header=False):
     with codecs.open(output_fpath, "w", encoding="utf-8") as output:
 
         if no_header:
-            df = read_csv(dataset_fpath, sep='\t', encoding='utf8', header=None, names=FIELD_NAMES, dtype=FIELD_TYPES)
+            df = read_csv(dataset_fpath, sep='\t', encoding='utf8', header=None, names=FIELD_NAMES,
+                    dtype=FIELD_TYPES, doublequote=False, quotechar='\0')
             df.target = df.target.astype(str)
         else:
-            df = read_csv(dataset_fpath, encoding='utf-8', delimiter="\t", error_bad_lines=False)
+            df = read_csv(dataset_fpath, encoding='utf-8', delimiter="\t", error_bad_lines=False, 
+                    doublequote=False, quotechar='\0')
 
         for i, row in df.iterrows():
             predicted_senses = " ".join(unicode(row.predict_sense_ids).split(","))

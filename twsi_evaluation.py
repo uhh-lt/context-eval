@@ -271,8 +271,8 @@ def calculate_cosine(v1, v2):
 
 def main():
     parser = argparse.ArgumentParser(description='Evaluation script for contextualizations with a custom Word Sense Inventory.')
-    parser.add_argument('sense_file', metavar='inventory', help='word sense inventory file, format:\n word_senseID <tab> list,of,words')
-    parser.add_argument('predictions', help='word sense disambiguation predictions, format:\n sentenceID <tab> predicted-word_senseID')
+    parser.add_argument('sense_file', metavar='inventory', help='word sense inventory file, format: "word<TAB>senseID<TAB>cluster", where cluster is a list of "word:score" separeted by ","')
+    parser.add_argument('predictions', help='word sense disambiguation predictions in the 9 column lexical sample format.')
     parser.add_argument('--verbose', action='store_true', help='Display detailed information. Default -- false.')
     parser.add_argument('--no_header', action='store_true', help='No headers. Default -- false.')
     args = parser.parse_args()

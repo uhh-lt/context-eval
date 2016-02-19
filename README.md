@@ -1,4 +1,4 @@
-# Context-Eval: Evaluation Tools for Unsupervised Knowledge-Free  Word Sense Disambiguation Systems
+Tools for Evaluation of Unsupervised Word Sense Disambiguation Systems
 
 This repository contains tools for evaluation of unsupervised word sense disambiguation (WSD) and lexical substitution also known as systems aka "contextualization" system. The scripts are based on TWSI 2.0 and SemEval 2013 datasets.  
 

@@ -17,6 +17,10 @@ def evaluate(lexsample_clasified_fpath):
 
     print "Accuracy: %.3f" % (sum(df.gold_sense_ids == df.predict_sense_ids) / float(len(df)))
 
+    print "Wrong:", sum(df.gold_sense_ids != df.predict_sense_ids)
+    for i, row in  df.iterrows():
+        if row.gold_sense_ids != row.predict_sense_ids:
+            print "\n>>>", row.target, row.gold_sense_ids, row.predict_sense_ids, row.context
 
 def main():
     parser = argparse.ArgumentParser(description='Evaluate directly i.e. without sense mapping.')

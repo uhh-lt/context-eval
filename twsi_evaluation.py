@@ -12,13 +12,8 @@ TWSI_ASSIGNED_SENSES = "data/AssignedSenses-TWSI-2.csv"
 TWSI_INVENTORY = "data/Inventory-TWSI-2.csv"
 
 
-_twsi_subst = {}
-_sense_mappings = {}
-_assigned_senses = {}
-
-
 class TWSI:
-    """ A class to store inventories """
+    """ A class to store sense inventories """
 
     def __init__(self, word):
         # target word
@@ -85,6 +80,8 @@ def load_twsi_senses():
     """ loads all TWSI 2.0 senses from the TWSI dataset folder
     filters senses by removing senses which do not occur in the TWSI data """
 
+    assigned_senses = load_assigned_senses(TWSI_ASSIGNED_SENSES)
+
     twsi_subst = {}
 
     print "Loading TWSI sense inventory..."
@@ -97,7 +94,7 @@ def load_twsi_senses():
         if t_s is None:
             t_s = TWSI(word)
         twsi_sense = word + "@@" + t_id
-        if twsi_sense not in _assigned_senses:
+        if twsi_sense not in assigned_senses:
             if DEBUG:
                 print "\nomitting TWSI sense " + twsi_sense + " as it did not occur in the sentences"
             continue
@@ -107,27 +104,27 @@ def load_twsi_senses():
     return twsi_subst
 
 
-def load_sense_inventory(filename):
+def map_sense_inventories(user_inventory_fpath):
     """ loads custom sense inventory performs alignment using cosine similarity """
+
+    twsi_senses = load_twsi_senses()
 
     sense_mappings = {}
 
-    print "Loading provided Sense Inventory " + filename + "..."
-    mapping_f = "data/Mapping_" + split(TWSI_INVENTORY)[1] + "_" + split(filename)[1]
-    print "Mapping saved to " + mapping_f
-    m_f = open(mapping_f, 'w')
-    inventory = read_csv(filename, '/\t+/', encoding='utf8', header=None, engine="python")
-    for r, inv in inventory.iterrows():
-        word, ident, terms = inv[0].split('\t')
-        if word in _twsi_subst:
-            m_f.write("\n\nProvided Sense:\t" + word + " " + ident + "\n")
-            m_f.write("Inventory:\t" + terms + "\n")
+    print "Loading provided Sense Inventory " + user_inventory_fpath + "..."
+    mapping_fpath = "data/Mapping_" + split(TWSI_INVENTORY)[1] + "_" + split(user_inventory_fpath)[1]
+    mapping_file = open(mapping_fpath, 'w')
+    user_inventory = read_csv(user_inventory_fpath, '/\t+/', encoding='utf8', header=None, engine="python")
+    for _, row in user_inventory.iterrows():
+        word, user_sense_id, cluster = row[0].split('\t')  # this is baaad :-)
+        if word in twsi_senses:
+            print >> mapping_file, "\n%s\n%s#%s: %s\n" % ("="*50, word, user_sense_id, cluster)
             if DEBUG:
-                print "\nSENSE: " + word + " " + ident
-            twsi = _twsi_subst.get(word)
+                print "\nSENSE: " + word + " " + user_sense_id
+            twsi = twsi_senses.get(word)
             word_vec = {}
 
-            for cluster_word_entry in set(terms.split(',')):
+            for cluster_word_entry in set(cluster.split(',')):
                 try:
                     word2, score2 = cluster_word_entry.strip().rsplit(SCORE_SEP, 1)
                     if not re.match('\D+', score2):
@@ -142,28 +139,27 @@ def load_sense_inventory(filename):
 
             # matching terms to TWSI sense ids
             scores = {}
-            for i in twsi.getSenseIds():
-                twsi_sense = twsi.getSubst(i)
-                scores[i] = calculate_cosine(twsi_sense, word_vec)
-                m_f.write("\nTSWI Sense " + i + ":\t")
+            for twsi_sense_id in twsi.getSenseIds():
+                twsi_sense = twsi.getSubst(twsi_sense_id)
+                scores[twsi_sense_id] = calculate_cosine(twsi_sense, word_vec)
+                print >> mapping_file, "%s#%s (%.3f):\t" % (word, twsi_sense_id, scores[twsi_sense_id]),
                 for key in twsi_sense.keys():
-                    m_f.write(key + ":" + str(twsi_sense[key]) + ", ")
-                m_f.write("\nCosine Score:\t" + str(scores[i]) + "\n")
-                if DEBUG:
-                    print "Score for ", i, ":", scores[i]
+                    mapping_file.write(key + ":" + str(twsi_sense[key]) + ", ")
+                print >> mapping_file, "\n"
 
             # assignment
             assigned_id = get_max_score(scores)
-            # assignment 'sense_mappings[ident] = ...' assumed ident's are unique over the whole inventory
-            sense_mappings[word + ident] = assigned_id
-            if DEBUG:
-                print "SCORES: " + str(scores)
-                print "ASSIGNED ID: " + word + " " + ident + "\t" + str(assigned_id)
+            sense_mappings[word + user_sense_id] = assigned_id
+            print >> mapping_file, word + "#" + unicode(assigned_id), "\n"
+
+
+
+    print "Mapping:" + mapping_fpath
 
     return sense_mappings
 
 
-def evaluate_predicted_labels(lexsub_dataset_fpath, has_header=True):
+def evaluate_predicted_labels(_sense_mappings, lexsub_dataset_fpath, has_header=True):
     """ loads and evaluates the results """
 
     print "Evaluating Predicted Labels " + lexsub_dataset_fpath + "..."
@@ -285,15 +281,8 @@ def main():
     print "No header:", args.no_header
     print ""
 
-    global _assigned_senses
-    _assigned_senses = load_assigned_senses(TWSI_ASSIGNED_SENSES)
-
-    global _twsi_subst
-    _twsi_subst = load_twsi_senses()
-
-    global _sense_mappings
-    _sense_mappings = load_sense_inventory(args.sense_file)
-    correct, retrieved, count = evaluate_predicted_labels(args.predictions, has_header=(not args.no_header))
+    sense_mappings = map_sense_inventories(args.sense_file)
+    correct, retrieved, count = evaluate_predicted_labels(sense_mappings, args.predictions, has_header=(not args.no_header))
 
     print "\nEvaluation Results:"
     print "Correct, retrieved, nr_sentences"

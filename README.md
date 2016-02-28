@@ -21,7 +21,7 @@ Installation
 
 1. Clone repository.
 2. Make sure that environment is setup: The default Python should be is 2.7. Currently Python 3 is not supported. The script was tested on Mac OSX and Linux. In principle, it should work on Windows under Cygwin. The script also requires Java 1.7 or higher. 
-3. Install dependencies: ```pip install pandas```.
+3. Install dependencies: ```pip install pandas spacy```.
 
 
 SemEval 2013 Task 13 Evaluation

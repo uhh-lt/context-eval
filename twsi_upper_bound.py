@@ -21,7 +21,7 @@ def evaluate_uppper_bound(filename, mapped_twsi_senses):
 
         if key not in checked:
             checked.add(key)
-            if row.target + gold_sense_ids in mapped_twsi_senses:
+            if gold_sense_ids in mapped_twsi_senses[row.target]:
                 correct += 1
                 retrieved += 1
     return correct, retrieved, i+1
@@ -38,8 +38,8 @@ def main():
     twsi_evaluation._assigned_senses = twsi_evaluation.load_assigned_senses(twsi_evaluation.TWSI_ASSIGNED_SENSES)
     twsi_evaluation._twsi_subst = twsi_evaluation.load_twsi_senses(twsi_evaluation.TWSI_INVENTORY)
 
-    twsi_evaluation.load_sense_inventory(args.sense_file)
-    correct, retrieved, count = evaluate_uppper_bound(TWSI_DATASET, twsi_evaluation._mapped_twsi_senses)
+    twsi_evaluation.map_sense_inventories(twsi_evaluation.TWSI_INVENTORY, args.sense_file)
+    correct, retrieved, count = evaluate_uppper_bound(TWSI_DATASET, twsi_evaluation._twsi_mapped_senses)
 
 
     print "\nUpper Bound Results:"

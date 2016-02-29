@@ -6,14 +6,15 @@ if [ "$#" -ne 2 ]; then
     exit
 fi
 
-# mvn package on the first run to generate cct_jar
 
 cct_jar="semeval_2013_13/cluster-comparison-tools/target/cluster-comparison-tools-1.0.0-jar-with-dependencies.jar"
 golden=$1  
 system_dataset=$2  
-sense_mapping=""  # or "--no-remapping" for .wn.
+sense_mapping=""  # or "--no-remapping" for wordnet sense identifiers .wn.
+header="--no_header"  # or "" if header is present
 
-python ./semeval_2013_13/dataset2key.py $system_dataset "$system_dataset.key" 
+
+python ./semeval_2013_13/dataset2key.py $system_dataset "$system_dataset.key" $header
 
 for metric in edu.ucla.clustercomparison.cl.JaccardIndexScorer edu.ucla.clustercomparison.cl.WeightedNdcgScorer  edu.ucla.clustercomparison.cl.WeightedTauScorer edu.ucla.clustercomparison.FuzzyNormalizedMutualInformation edu.ucla.clustercomparison.FuzzyBCubed
 do

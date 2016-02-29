@@ -7,13 +7,16 @@ import re
 from pandas import read_csv
 from morph import is_stopword, tokenize
 import codecs
+from collections import defaultdict
+
 
 DEBUG = False
 LIST_SEP = ','
 SCORE_SEP = ':'
 TWSI_ASSIGNED_SENSES = "data/AssignedSenses-TWSI-2.csv"
 TWSI_INVENTORY = "data/Inventory-TWSI-2.csv"
-SPLIT_MWE=False
+SPLIT_MWE=True
+
 
 class TWSI:
     """ A class to store sense inventories """
@@ -118,12 +121,74 @@ def load_twsi_senses(twsi_inventory_fpath, twsi_assigned_fpath=TWSI_ASSIGNED_SEN
     return twsi_senses
 
 
+def print_twsi_stat(twsi_senses):
+
+    num_senses = 0.0
+    for word in twsi_senses:
+        for sense in twsi_senses[word].terms:
+            num_senses += 1.0
+
+    print "twsi #words:", len(twsi_senses)
+    print "twsi #senses:", num_senses
+    print "twsi average #senses per word: %.2f" % (num_senses/len(twsi_senses))
+
+
+def print_user_stat(user2twsi):
+    num_senses = 0.0
+    for word in user2twsi:
+        for sense in user2twsi[word]:
+            num_senses += 1.0
+
+    print "user #words:", len(user2twsi)
+    print "user #senses:", num_senses
+    print "user average #senses per word: %.2f" % (num_senses/len(user2twsi))
+
+
+def print_twsi2user_stat(twsi_senses, twsi_mapped_senses):
+    print "twsi unmapped senses:"
+    twsi_unmapped = 0.0
+    num_senses = 0.0
+    for word in twsi_senses:
+        for sense in twsi_senses[word].terms:
+            num_senses += 1
+            if sense not in twsi_mapped_senses[word]:
+                cluster = ", ".join(sorted(twsi_senses[word].terms[sense], key=twsi_senses[word].terms[sense].get, reverse=True))
+                print "\t%s#%s: %s" % (word, sense, cluster)
+
+                twsi_unmapped += 1
+    print "# twsi unmapped senses: %.2f%% (%d of %d)" % (100*twsi_unmapped/num_senses, twsi_unmapped, num_senses)
+
+def print_user2twsi_stat(user2twsi, user_senses):
+    user_num = 0.0
+    user_unmapped = 0.0
+    unmapped_senses = []
+    unmapped_words = []
+    for word in user2twsi:
+        is_unmapped = True
+        for sense in user2twsi[word]:
+            user_num += 1.0
+            if user2twsi[word][sense] == -1 or user2twsi[word][sense] == "-1":
+                user_unmapped += 1
+                unmapped_senses.append((word,sense))
+            else:
+                is_unmapped = False
+        if is_unmapped:
+            unmapped_words.append(word)
+
+    print "# user unmapped senses: %.2f%% (%d of %d)" % (100*user_unmapped/user_num, user_unmapped, len(user2twsi))
+    print "user unmapped senses:"
+    for word, sense_id in unmapped_senses:
+        print "\t%s#%s: %s" % (word, sense_id, user_senses[word][sense_id])
+    print "user unmapped words:", unmapped_words
+
+
 def map_sense_inventories(twsi_inventory_fpath, user_inventory_fpath):
     """ loads custom sense inventory performs alignment using cosine similarity """
 
     twsi_senses = load_twsi_senses(twsi_inventory_fpath)
-
-    user2twsi_mapping = {}
+    user_senses = defaultdict(dict)
+    user2twsi = defaultdict(dict)
+    twsi_mapped_senses = defaultdict(set)
 
     print "Loading provided Sense Inventory " + user_inventory_fpath + "..."
     mapping_fpath = "data/Mapping_" + split(TWSI_INVENTORY)[1] + "_" + split(user_inventory_fpath)[1]
@@ -133,9 +198,8 @@ def map_sense_inventories(twsi_inventory_fpath, user_inventory_fpath):
 
         for _, row in user_inventory.iterrows():
             if row.word in twsi_senses:
-                print >> mapping_file, "\n%s\n%s#%s: %s\n" % ("="*50, row.word, row.sense_id, row.cluster)
-                if DEBUG:
-                    print "\nSENSE: " + row.word + " " + row.sense_id
+                print >> mapping_file, "\n%s\nUser: %s#%s: %s\n" % ("="*50, row.word, row.sense_id, row.cluster)
+                user_senses[row.word][row.sense_id] = row.cluster
                 twsi = twsi_senses.get(row.word)
 
                 user_cluster = {}
@@ -156,24 +220,29 @@ def map_sense_inventories(twsi_inventory_fpath, user_inventory_fpath):
                 for twsi_sense_id in twsi.getSenseIds():
                     twsi_cluster = twsi.get_cluster(twsi_sense_id)
                     scores[twsi_sense_id] = calculate_cosine(twsi_cluster, user_cluster)
-                    print >> mapping_file, "%s#%s (%.3f):\t" % (row.word, twsi_sense_id, scores[twsi_sense_id]),
-                    for key in twsi_cluster.keys():
+                    print >> mapping_file, "TWSI: %s#%s (%.3f):\t" % (row.word, twsi_sense_id, scores[twsi_sense_id]),
+                    for key in sorted(twsi_cluster, key=twsi_cluster.get, reverse=True):
                         mapping_file.write(key + ":" + str(twsi_cluster[key]) + ", ")
                     print >> mapping_file, "\n"
 
                 # assignment
                 assigned_twsi_sense_id = get_max_score(scores)
-                user2twsi_mapping[row.word + row.sense_id] = assigned_twsi_sense_id
-                print >> mapping_file, row.word + "#" + unicode(assigned_twsi_sense_id), "\n"
+                user2twsi[row.word][row.sense_id] = assigned_twsi_sense_id
+                twsi_mapped_senses[row.word].add(assigned_twsi_sense_id)
+                print >> mapping_file, "Assigned TWSI:", row.word + "#" + unicode(assigned_twsi_sense_id), "\n"
             else:
                 print "Warning: skipping word not present in TWSI vocabulary:", row.word
 
     print "Mapping:", mapping_fpath
+    print_twsi_stat(twsi_senses)
+    print_user_stat(user2twsi)
+    print_user2twsi_stat(user2twsi, user_senses)
+    print_twsi2user_stat(twsi_senses, twsi_mapped_senses)
 
-    return user2twsi_mapping
+    return user2twsi
 
 
-def evaluate_predicted_labels(user2twsi_mapping, lexsub_dataset_fpath, has_header=True):
+def evaluate_predicted_labels(user2twsi, lexsub_dataset_fpath, has_header=True):
     """ loads and evaluates the results """
 
     print "Evaluating Predicted Labels " + lexsub_dataset_fpath + "..."
@@ -201,16 +270,16 @@ def evaluate_predicted_labels(user2twsi_mapping, lexsub_dataset_fpath, has_heade
 
         if key not in checked:
             checked.add(key)
-            if row.target + predicted_sense_ids in user2twsi_mapping and gold_sense_ids == user2twsi_mapping[row.target + predicted_sense_ids]:
+            if (row.target in user2twsi and predicted_sense_ids in user2twsi[row.target]) and gold_sense_ids == user2twsi[row.target][predicted_sense_ids]:
                 correct += 1
             if int(float(predicted_sense_ids)) > -1:
                 retrieved += 1
             if DEBUG:
-                if row.target + predicted_sense_ids in user2twsi_mapping:
+                if row.target in user2twsi and predicted_sense_ids in user2twsi[row.target]:
                     print "Sentence: " + key + "\tPrediction: " + predicted_sense_ids + \
                           "\tGold: " + key + \
-                          "\tPredicted_TWSI_sense: " + str(user2twsi_mapping[row.target + predicted_sense_ids]) + \
-                          "\tMatch:" + str(gold_sense_ids == user2twsi_mapping[row.target + predicted_sense_ids])
+                          "\tPredicted_TWSI_sense: " + unicode(user2twsi[row.target][predicted_sense_ids]) + \
+                          "\tMatch:" + unicode(gold_sense_ids == user2twsi[row.target][predicted_sense_ids])
                 else:
                     print "Sentence: " + key + "\tPrediction: " + predicted_sense_ids + \
                           "\tGold: " + key + \

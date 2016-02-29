@@ -16,8 +16,8 @@ SCORE_SEP = ':'
 TWSI_ASSIGNED_SENSES = "data/AssignedSenses-TWSI-2.csv"
 TWSI_INVENTORY = "data/Inventory-TWSI-2.csv"
 SPLIT_MWE=True
+PRINT_UNMAPPED=False
 
-_twsi_mapped_senses = defaultdict(set)
 
 class TWSI:
     """ A class to store sense inventories """
@@ -123,7 +123,6 @@ def load_twsi_senses(twsi_inventory_fpath, twsi_assigned_fpath=TWSI_ASSIGNED_SEN
 
 
 def print_twsi_stat(twsi_senses):
-
     num_senses = 0.0
     for word in twsi_senses:
         for sense in twsi_senses[word].terms:
@@ -153,11 +152,12 @@ def print_twsi2user_stat(twsi_senses, twsi_mapped_senses):
         for sense in twsi_senses[word].terms:
             num_senses += 1
             if sense not in twsi_mapped_senses[word]:
-                cluster = ", ".join(sorted(twsi_senses[word].terms[sense], key=twsi_senses[word].terms[sense].get, reverse=True))
-                print "\t%s#%s: %s" % (word, sense, cluster)
-
+                if PRINT_UNMAPPED:
+                    cluster = ", ".join(sorted(twsi_senses[word].terms[sense], key=twsi_senses[word].terms[sense].get, reverse=True))
+                    print "\t%s#%s: %s" % (word, sense, cluster)
                 twsi_unmapped += 1
     print "# twsi unmapped senses: %.2f%% (%d of %d)" % (100*twsi_unmapped/num_senses, twsi_unmapped, num_senses)
+
 
 def print_user2twsi_stat(user2twsi, user_senses):
     user_num = 0.0
@@ -177,9 +177,10 @@ def print_user2twsi_stat(user2twsi, user_senses):
             unmapped_words.append(word)
 
     print "# user unmapped senses: %.2f%% (%d of %d)" % (100*user_unmapped/user_num, user_unmapped, len(user2twsi))
-    print "user unmapped senses:"
-    for word, sense_id in unmapped_senses:
-        print "\t%s#%s: %s" % (word, sense_id, user_senses[word][sense_id])
+    if PRINT_UNMAPPED:
+        print "user unmapped senses:"
+        for word, sense_id in unmapped_senses:
+            print "\t%s#%s: %s" % (word, sense_id, user_senses[word][sense_id])
     print "user unmapped words:", unmapped_words
 
 
@@ -189,7 +190,7 @@ def map_sense_inventories(twsi_inventory_fpath, user_inventory_fpath):
     twsi_senses = load_twsi_senses(twsi_inventory_fpath)
     user_senses = defaultdict(dict)
     user2twsi = defaultdict(dict)
-    global _twsi_mapped_senses
+    twsi_mapped_senses = defaultdict(set)
 
     print "Loading provided Sense Inventory " + user_inventory_fpath + "..."
     mapping_fpath = "data/Mapping_" + split(TWSI_INVENTORY)[1] + "_" + split(user_inventory_fpath)[1]
@@ -229,7 +230,7 @@ def map_sense_inventories(twsi_inventory_fpath, user_inventory_fpath):
                 # assignment
                 assigned_twsi_sense_id = get_max_score(scores)
                 user2twsi[row.word][row.sense_id] = assigned_twsi_sense_id
-                _twsi_mapped_senses[row.word].add(assigned_twsi_sense_id)
+                twsi_mapped_senses[row.word].add(assigned_twsi_sense_id)
                 print >> mapping_file, "Assigned TWSI:", row.word + "#" + unicode(assigned_twsi_sense_id), "\n"
             else:
                 print "Warning: skipping word not present in TWSI vocabulary:", row.word
@@ -238,7 +239,7 @@ def map_sense_inventories(twsi_inventory_fpath, user_inventory_fpath):
     print_twsi_stat(twsi_senses)
     print_user_stat(user2twsi)
     print_user2twsi_stat(user2twsi, user_senses)
-    print_twsi2user_stat(twsi_senses, _twsi_mapped_senses)
+    print_twsi2user_stat(twsi_senses, twsi_mapped_senses)
 
     return user2twsi
 

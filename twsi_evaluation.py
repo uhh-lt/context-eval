@@ -9,20 +9,15 @@ from morph import is_stopword, tokenize
 import codecs
 from collections import defaultdict
 
+
 DEBUG = False
 LIST_SEP = ','
 SCORE_SEP = ':'
-SPLIT_MWE=True
-
-_twsi_subst = {}
-_sense_mappings = {}
-_twsi_mapped_senses = set()
-_assigned_senses = {}
-
 TWSI_ASSIGNED_SENSES = "data/AssignedSenses-TWSI-2.csv"
 TWSI_INVENTORY = "data/Inventory-TWSI-2.csv"
+SPLIT_MWE=True
 
-
+_twsi_mapped_senses = defaultdict(set)
 
 class TWSI:
     """ A class to store sense inventories """
@@ -101,7 +96,6 @@ def load_assigned_senses(assigned_senses_fpath):
     return assigned_senses
 
 
-
 def load_twsi_senses(twsi_inventory_fpath, twsi_assigned_fpath=TWSI_ASSIGNED_SENSES):
     """ loads all TWSI 2.0 senses, filters senses by removing senses which do not occur in the TWSI data """
 
@@ -151,14 +145,14 @@ def print_user_stat(user2twsi):
     print "user average #senses per word: %.2f" % (num_senses/len(user2twsi))
 
 
-def print_twsi2user_stat(twsi_senses, _twsi_mapped_senses):
+def print_twsi2user_stat(twsi_senses, twsi_mapped_senses):
     print "twsi unmapped senses:"
     twsi_unmapped = 0.0
     num_senses = 0.0
     for word in twsi_senses:
         for sense in twsi_senses[word].terms:
             num_senses += 1
-            if sense not in _twsi_mapped_senses[word]:
+            if sense not in twsi_mapped_senses[word]:
                 cluster = ", ".join(sorted(twsi_senses[word].terms[sense], key=twsi_senses[word].terms[sense].get, reverse=True))
                 print "\t%s#%s: %s" % (word, sense, cluster)
 
@@ -196,7 +190,6 @@ def map_sense_inventories(twsi_inventory_fpath, user_inventory_fpath):
     user_senses = defaultdict(dict)
     user2twsi = defaultdict(dict)
     global _twsi_mapped_senses
-    _twsi_mapped_senses = defaultdict(set)
 
     print "Loading provided Sense Inventory " + user_inventory_fpath + "..."
     mapping_fpath = "data/Mapping_" + split(TWSI_INVENTORY)[1] + "_" + split(user_inventory_fpath)[1]
@@ -304,7 +297,7 @@ def get_max_score(scores):
 
     max_value = 0
     max_id = -1
-    for i in scores:
+    for i in scores.keys():
         if scores[i] > max_value:
             max_value = scores[i]
             max_id = i
@@ -340,13 +333,13 @@ def calculate_cosine(v1, v2):
     score = 0
     len1 = 0
     len2 = 0
-    for w in v1:
-        if w in v2:
+    for w in v1.keys():
+        if w in v2.keys():
             if DEBUG:
                 print "Element:", w, v1[w], v2[w]
             score += v1[w] * v2[w]
         len1 += pow(v1[w], 2)
-    for w in v2:
+    for w in v2.keys():
         len2 += pow(v2[w], 2)
     l1 = sqrt(len1)
     l2 = sqrt(len2)

@@ -5,15 +5,17 @@ from os.path import split
 from math import sqrt
 import re
 from pandas import read_csv
+import os
 
 DEBUG = False
 SCORE_SEP = ':'
-TWSI_ASSIGNED_SENSES = "data/AssignedSenses-TWSI-2.csv"
-TWSI_INVENTORY = "data/Inventory-TWSI-2.csv"
+TWSI_ASSIGNED_SENSES = 'data/AssignedSenses-TWSI-2.csv'
+TWSI_INVENTORY = 'data/Inventory-TWSI-2.csv'
 
 
 _twsi_subst = {}
 _sense_mappings = {}
+_mapped_twsi_senses = set()
 _assigned_senses = {}
 
 
@@ -81,7 +83,8 @@ def load_assigned_senses(assigned_senses_fpath):
     return assigned_senses
 
 
-def load_twsi_senses():
+def load_twsi_senses(inventory):
+    inv = os.path.join(os.getcwd(), inventory)
     """ loads all TWSI 2.0 senses from the TWSI dataset folder
     filters senses by removing senses which do not occur in the TWSI data """
 
@@ -89,27 +92,28 @@ def load_twsi_senses():
 
     print "Loading TWSI sense inventory..."
     # otherwise a warning was shown, that c engine cannot be used because c engine cannot work with pattern as separators (or smth like this)
-    substitutions = read_csv(TWSI_INVENTORY, '/\t+/', encoding='utf8', header=None, engine="python")
+    substitutions = read_csv(inv, '/\t+/', encoding='utf8', header=None, engine="python")
     for i, s in substitutions.iterrows():
         # create new TwsiSubst for the given word
         word, t_id, subs = s[0].split('\t')
-        t_s = twsi_subst.get(word)
-        if t_s is None:
+
+        if word in twsi_subst:
+            t_s = twsi_subst[word]
+        else:
             t_s = TWSI(word)
+            twsi_subst[word] = t_s
+
         twsi_sense = word + "@@" + t_id
         if twsi_sense not in _assigned_senses:
             if DEBUG:
                 print "\nomitting TWSI sense " + twsi_sense + " as it did not occur in the sentences"
             continue
         t_s.addTerms(t_id, subs)
-        twsi_subst[word] = t_s
-
     return twsi_subst
 
 
 def load_sense_inventory(filename):
     """ loads custom sense inventory performs alignment using cosine similarity """
-
     sense_mappings = {}
 
     print "Loading provided Sense Inventory " + filename + "..."
@@ -124,7 +128,7 @@ def load_sense_inventory(filename):
             m_f.write("Inventory:\t" + terms + "\n")
             if DEBUG:
                 print "\nSENSE: " + word + " " + ident
-            twsi = _twsi_subst.get(word)
+            twsi = _twsi_subst[word]
             word_vec = {}
 
             for cluster_word_entry in set(terms.split(',')):
@@ -146,7 +150,7 @@ def load_sense_inventory(filename):
                 twsi_sense = twsi.getSubst(i)
                 scores[i] = calculate_cosine(twsi_sense, word_vec)
                 m_f.write("\nTSWI Sense " + i + ":\t")
-                for key in twsi_sense.keys():
+                for key in twsi_sense:
                     m_f.write(key + ":" + str(twsi_sense[key]) + ", ")
                 m_f.write("\nCosine Score:\t" + str(scores[i]) + "\n")
                 if DEBUG:
@@ -156,10 +160,12 @@ def load_sense_inventory(filename):
             assigned_id = get_max_score(scores)
             # assignment 'sense_mappings[ident] = ...' assumed ident's are unique over the whole inventory
             sense_mappings[word + ident] = assigned_id
+            # reverse mapping
+            if (assigned_id > -1):
+                _mapped_twsi_senses.add(word+str(assigned_id))
             if DEBUG:
                 print "SCORES: " + str(scores)
                 print "ASSIGNED ID: " + word + " " + ident + "\t" + str(assigned_id)
-
     return sense_mappings
 
 
@@ -211,7 +217,7 @@ def get_max_score(scores):
 
     max_value = 0
     max_id = -1
-    for i in scores.keys():
+    for i in scores:
         if scores[i] > max_value:
             max_value = scores[i]
             max_id = i
@@ -247,13 +253,13 @@ def calculate_cosine(v1, v2):
     score = 0
     len1 = 0
     len2 = 0
-    for w in v1.keys():
-        if w in v2.keys():
+    for w in v1:
+        if w in v2:
             if DEBUG:
                 print "Element:", w, v1[w], v2[w]
             score += v1[w] * v2[w]
         len1 += pow(v1[w], 2)
-    for w in v2.keys():
+    for w in v2:
         len2 += pow(v2[w], 2)
     l1 = sqrt(len1)
     l2 = sqrt(len2)
@@ -281,10 +287,11 @@ def main():
     _assigned_senses = load_assigned_senses(TWSI_ASSIGNED_SENSES)
 
     global _twsi_subst
-    _twsi_subst = load_twsi_senses()
+    _twsi_subst = load_twsi_senses(TWSI_INVENTORY)
 
     global _sense_mappings
     _sense_mappings = load_sense_inventory(args.sense_file)
+
     correct, retrieved, count = evaluate_predicted_labels(args.predictions)
 
     print "\nEvaluation Results:"

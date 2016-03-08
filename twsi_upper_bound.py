@@ -38,7 +38,7 @@ def main():
     print "\nUpper Bound Results:"
     print "Correct, retrieved, nr_sentences"
     print correct, "\t", count
-    precision, recall, fscore = calculate_evaluation_scores(correct=correct, retrieved=count, itemcount=count)
+    precision, recall, fscore = calculate_evaluation_scores(correct=correct, retrieved=correct, itemcount=count)
     print "Precision:", precision, "\tRecall:", recall, "\tF1:", fscore
 
 

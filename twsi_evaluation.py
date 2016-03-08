@@ -197,6 +197,7 @@ def map_sense_inventories(twsi_inventory_fpath, user_inventory_fpath):
     with codecs.open(mapping_fpath, "w", "utf-8") as mapping_file:
         user_inventory = read_csv(user_inventory_fpath, sep="\t", encoding='utf8', header=None, names=["word","sense_id","cluster"])
         user_inventory.sense_id = user_inventory.sense_id.astype(unicode)
+        user_inventory.cluster = user_inventory.cluster.astype(unicode)
 
         for _, row in user_inventory.iterrows():
             if row.word in twsi_senses:

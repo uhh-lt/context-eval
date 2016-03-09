@@ -107,7 +107,8 @@ def load_twsi_senses(twsi_inventory_fpath, twsi_assigned_fpath=TWSI_ASSIGNED_SEN
     # otherwise a warning was shown, that c engine cannot be used because c engine cannot work with pattern as separators (or smth like this)
     substitutions = read_csv(twsi_inventory_fpath, sep="\t", encoding='utf8', header=None, names=["word","sense_id","cluster"])
     substitutions.sense_id = substitutions.sense_id.astype(unicode)
-
+    substitutions.cluster = substitutions.cluster.astype(unicode)
+    
     for i, row in substitutions.iterrows():
         sense = twsi_senses.get(row.word)
         if sense is None: sense = TWSI(row.word)

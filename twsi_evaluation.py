@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+
 import argparse
 from os.path import split
 from math import sqrt
@@ -7,7 +8,7 @@ import re
 from pandas import read_csv
 from morph import is_stopword, tokenize
 import codecs
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 
 DEBUG = False
@@ -246,6 +247,21 @@ def map_sense_inventories(twsi_inventory_fpath, user_inventory_fpath):
     return user2twsi
 
 
+def get_best_id(predict_sense_ids):
+    """ Converts a string '1:0.9, 2:0.1' to '1', or just keeps the simple format the same e.g. '1' -> '1'. """
+
+    ids = predict_sense_ids.split(",")
+    scores = Counter()
+    for s in ids:
+        p = s.split(":")
+        label = p[0]
+        conf = p[1] if len(p) == 2 else 1.0
+        scores[label] = conf
+    major_label = scores.most_common(1)[0][0]
+
+    return major_label
+
+
 def evaluate_predicted_labels(user2twsi, lexsub_dataset_fpath, has_header=True):
     """ loads and evaluates the results """
 
@@ -261,36 +277,37 @@ def evaluate_predicted_labels(user2twsi, lexsub_dataset_fpath, has_header=True):
             names=["context_id","target","target_pos","target_position","gold_sense_ids","predict_sense_ids",
                    "golden_related","predict_related","context"])
 
+    lexsub_dataset.predict_sense_ids = lexsub_dataset.predict_sense_ids.astype(unicode)
+    lexsub_dataset.gold_sense_ids = lexsub_dataset.gold_sense_ids.astype(unicode)
+    lexsub_dataset.context_id = lexsub_dataset.context_id.astype(unicode)
+
     i = -1
     for i, row in lexsub_dataset.iterrows():
-        context_id = row.context_id
-        gold_sense_ids = unicode(row.gold_sense_ids)
-        if unicode(row.predict_sense_ids) == 'nan':
-            print "Sentence " + unicode(context_id) + ": Key '" + row.target + "' without sense assignment"
-            predicted_sense_ids = "-1"
-        else:
-            predicted_sense_ids = unicode(int(row.predict_sense_ids))
-        key = unicode(context_id) + row.target
+        # parse fields
+        row.gold_sense_ids = unicode(int(row.gold_sense_ids))
+        if row.predict_sense_ids == "nan": row.predict_sense_ids = "-1"
+        key = row.context_id + row.target
+        predict_sense_id = get_best_id(row.predict_sense_ids)
 
         if key not in checked:
             checked.add(key)
-            if (row.target in user2twsi and predicted_sense_ids in user2twsi[row.target]) and gold_sense_ids == user2twsi[row.target][predicted_sense_ids]:
+            if (row.target in user2twsi and predict_sense_id in user2twsi[row.target]) and row.gold_sense_ids == user2twsi[row.target][predict_sense_id]:
                 correct += 1
-            if int(float(predicted_sense_ids)) > -1:
+            if int(predict_sense_id) > -1:
                 retrieved += 1
             if DEBUG:
-                if row.target in user2twsi and predicted_sense_ids in user2twsi[row.target]:
-                    print "Sentence: " + key + "\tPrediction: " + predicted_sense_ids + \
+                if row.target in user2twsi and predict_sense_id in user2twsi[row.target]:
+                    print "Sentence: " + key + "\tPrediction: " + predict_sense_id + \
                           "\tGold: " + key + \
-                          "\tPredicted_TWSI_sense: " + unicode(user2twsi[row.target][predicted_sense_ids]) + \
-                          "\tMatch:" + unicode(gold_sense_ids == user2twsi[row.target][predicted_sense_ids])
+                          "\tPredicted_TWSI_sense: " + unicode(user2twsi[row.target][predict_sense_id]) + \
+                          "\tMatch:" + unicode(row.gold_sense_ids == user2twsi[row.target][predict_sense_id])
                 else:
-                    print "Sentence: " + key + "\tPrediction: " + predicted_sense_ids + \
+                    print "Sentence: " + key + "\tPrediction: " + predict_sense_id + \
                           "\tGold: " + key + \
                           "\tPredicted_TWSI_sense: " + "none" + \
                           "\tMatch: False"
 
-        elif DEBUG:
+        else:
             print "Sentence not in gold data: " + key + " ... Skipping sentence for evaluation."
     return correct, retrieved, i + 1
 

@@ -9,6 +9,8 @@ from pandas import read_csv
 from morph import is_stopword, tokenize
 import codecs
 from collections import defaultdict, Counter
+import numpy as np
+from traceback import format_exc
 
 
 DEBUG = False
@@ -106,10 +108,11 @@ def load_twsi_senses(twsi_inventory_fpath, twsi_assigned_fpath=TWSI_ASSIGNED_SEN
 
     print "Loading TWSI sense inventory..."
     # otherwise a warning was shown, that c engine cannot be used because c engine cannot work with pattern as separators (or smth like this)
-    substitutions = read_csv(twsi_inventory_fpath, sep="\t", encoding='utf8', header=None, names=["word","sense_id","cluster"])
+    substitutions = read_csv(twsi_inventory_fpath, sep="\t", encoding='utf8', header=None, names=["word","sense_id","cluster"],
+        dtype={'sense_id': np.unicode, 'cluster': np.unicode})
     substitutions.sense_id = substitutions.sense_id.astype(unicode)
     substitutions.cluster = substitutions.cluster.astype(unicode)
-    
+
     for i, row in substitutions.iterrows():
         sense = twsi_senses.get(row.word)
         if sense is None: sense = TWSI(row.word)
@@ -197,9 +200,11 @@ def map_sense_inventories(twsi_inventory_fpath, user_inventory_fpath):
     print "Loading provided Sense Inventory " + user_inventory_fpath + "..."
     mapping_fpath = "data/Mapping_" + split(TWSI_INVENTORY)[1] + "_" + split(user_inventory_fpath)[1]
     with codecs.open(mapping_fpath, "w", "utf-8") as mapping_file:
-        user_inventory = read_csv(user_inventory_fpath, sep="\t", encoding='utf8', header=None, names=["word","sense_id","cluster"])
+        user_inventory = read_csv(user_inventory_fpath, sep="\t", encoding='utf8', header=None,
+            names=["word","sense_id","cluster"], dtype={'sense_id':np.unicode, 'cluster':np.unicode})
         user_inventory.sense_id = user_inventory.sense_id.astype(unicode)
         user_inventory.cluster = user_inventory.cluster.astype(unicode)
+
 
         for _, row in user_inventory.iterrows():
             if row.word in twsi_senses:
@@ -250,17 +255,21 @@ def map_sense_inventories(twsi_inventory_fpath, user_inventory_fpath):
 def get_best_id(predict_sense_ids):
     """ Converts a string '1:0.9, 2:0.1' to '1', or just keeps the simple format the same e.g. '1' -> '1'. """
 
-    ids = predict_sense_ids.split(",")
-    scores = Counter()
-    for s in ids:
-        p = s.split(":")
-        label = p[0]
-        conf = p[1] if len(p) == 2 else 1.0
-        scores[label] = conf
-    major_label = scores.most_common(1)[0][0]
+    try:
+        ids = predict_sense_ids.split(",")
+        scores = Counter()
+        for s in ids:
+            p = s.split(":")
+            label = p[0]
+            conf = float(p[1]) if len(p) == 2 else 1.0
+            scores[label] = conf
+        major_label = scores.most_common(1)[0][0]
 
-    return major_label
-
+        return major_label
+    except:
+        print predict_sense_ids
+        print format_exc()
+        return "-1"
 
 def evaluate_predicted_labels(user2twsi, lexsub_dataset_fpath, has_header=True):
     """ loads and evaluates the results """
@@ -271,12 +280,13 @@ def evaluate_predicted_labels(user2twsi, lexsub_dataset_fpath, has_header=True):
     checked = set()
 
     if has_header:
-        lexsub_dataset = read_csv(lexsub_dataset_fpath, sep='\t', encoding='utf8')
+        lexsub_dataset = read_csv(lexsub_dataset_fpath, sep='\t', encoding='utf8',
+            dtype={'predict_sense_ids': np.unicode, 'gold_sense_ids': np.unicode, 'context_id': np.unicode} )
     else:
         lexsub_dataset = read_csv(lexsub_dataset_fpath, sep='\t', encoding='utf8', header=None,
             names=["context_id","target","target_pos","target_position","gold_sense_ids","predict_sense_ids",
-                   "golden_related","predict_related","context"])
-
+                   "golden_related","predict_related","context"],
+            dtype={'predict_sense_ids': np.unicode, 'gold_sense_ids': np.unicode, 'context_id': np.unicode})
     lexsub_dataset.predict_sense_ids = lexsub_dataset.predict_sense_ids.astype(unicode)
     lexsub_dataset.gold_sense_ids = lexsub_dataset.gold_sense_ids.astype(unicode)
     lexsub_dataset.context_id = lexsub_dataset.context_id.astype(unicode)
@@ -284,7 +294,7 @@ def evaluate_predicted_labels(user2twsi, lexsub_dataset_fpath, has_header=True):
     i = -1
     for i, row in lexsub_dataset.iterrows():
         # parse fields
-        row.gold_sense_ids = unicode(int(row.gold_sense_ids))
+        # row.gold_sense_ids = unicode(int(row.gold_sense_ids))
         if row.predict_sense_ids == "nan": row.predict_sense_ids = "-1"
         key = row.context_id + row.target
         predict_sense_id = get_best_id(row.predict_sense_ids)
@@ -307,7 +317,7 @@ def evaluate_predicted_labels(user2twsi, lexsub_dataset_fpath, has_header=True):
                           "\tPredicted_TWSI_sense: " + "none" + \
                           "\tMatch: False"
 
-        else:
+        elif DEBUG:
             print "Sentence not in gold data: " + key + " ... Skipping sentence for evaluation."
     return correct, retrieved, i + 1
 

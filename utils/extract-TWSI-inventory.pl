@@ -1,10 +1,15 @@
 # usage :
 # find path/to/TWSI2_complete/substitutions/raw_data/all-substitutions/ -name \*.turk* | sort | xargs perl utils/extract-TWSI-inventory.pl
-
+if ($#ARGV < 1) {
+	print "usage: find path/to/TWSI2_complete/substitutions/raw_data/all-substitutions/ -name \*.turk* | sort | xargs perl utils/extract-TWSI-inventory.pl\n";
+	exit(1);
+}
 
 # take only polysemous words
 $poly = 0;
 
+# add substitution counts to related words
+$add_counts = 1;
 
 
 # file list as arguments
@@ -58,7 +63,9 @@ foreach $in (@ARGV) {
 			$substitutions = "";
 			foreach my $s (sort { $scores{$b} <=> $scores{$a} } keys %scores) {
 				if ($s !~ m/HASH/) { 
-					$substitutions .= "$s:$scores{$s}, "
+					$substitutions .= $s;
+					if ($add_counts == 1) {$substitutions .= ":$scores{$s}";}
+					$substitutions .= ", ";
 				}
 			}
 				

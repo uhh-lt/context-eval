@@ -5,7 +5,7 @@ import argparse
 from os.path import split
 from math import sqrt
 import re
-from pandas import read_csv
+from pandas import read_csv, Series
 from morph import is_stopword, tokenize
 import codecs
 from collections import defaultdict, Counter
@@ -291,10 +291,11 @@ def evaluate_predicted_labels(user2twsi, lexsub_dataset_fpath, has_header=True):
     lexsub_dataset.gold_sense_ids = lexsub_dataset.gold_sense_ids.astype(unicode)
     lexsub_dataset.context_id = lexsub_dataset.context_id.astype(unicode)
 
+    predict_sense_ids_mapped = np.zeros(len(lexsub_dataset))
+    predict_sense_ids_mapped.fill(-1)
+    correct_column = np.zeros(len(lexsub_dataset))
     i = -1
     for i, row in lexsub_dataset.iterrows():
-        # parse fields
-        # row.gold_sense_ids = unicode(int(row.gold_sense_ids))
         if row.predict_sense_ids == "nan": row.predict_sense_ids = "-1"
         key = row.context_id + row.target
         predict_sense_id = get_best_id(row.predict_sense_ids)
@@ -302,6 +303,8 @@ def evaluate_predicted_labels(user2twsi, lexsub_dataset_fpath, has_header=True):
         if key not in checked:
             checked.add(key)
             if (row.target in user2twsi and predict_sense_id in user2twsi[row.target]) and row.gold_sense_ids == user2twsi[row.target][predict_sense_id]:
+                predict_sense_ids_mapped[i] = user2twsi[row.target][predict_sense_id]
+                correct_column[i] = 1
                 correct += 1
             if int(predict_sense_id) > -1:
                 retrieved += 1
@@ -319,6 +322,13 @@ def evaluate_predicted_labels(user2twsi, lexsub_dataset_fpath, has_header=True):
 
         elif DEBUG:
             print "Sentence not in gold data: " + key + " ... Skipping sentence for evaluation."
+
+    lexsub_dataset["predict_sense_ids_mapped"] = Series(predict_sense_ids_mapped, index=lexsub_dataset.index)
+    lexsub_dataset["correct"] = Series(correct_column, index=lexsub_dataset.index)
+    output_fpath = lexsub_dataset_fpath + "-evaluated.csv"
+    lexsub_dataset.to_csv(output_fpath, sep="\t", encoding="utf-8", float_format='%.0f', index=False)
+    print "Evaluated dataset:", output_fpath
+
     return correct, retrieved, i + 1
 
 

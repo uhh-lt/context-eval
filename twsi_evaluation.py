@@ -201,7 +201,8 @@ def map_sense_inventories(twsi_inventory_fpath, user_inventory_fpath):
     mapping_fpath = "data/Mapping_" + split(TWSI_INVENTORY)[1] + "_" + split(user_inventory_fpath)[1]
     with codecs.open(mapping_fpath, "w", "utf-8") as mapping_file:
         user_inventory = read_csv(user_inventory_fpath, sep="\t", encoding='utf8', header=None,
-            names=["word","sense_id","cluster"], dtype={'sense_id':np.unicode, 'cluster':np.unicode})
+            names=["word","sense_id","cluster"], dtype={'sense_id':np.unicode, 'cluster':np.unicode}, 
+            doublequote=False, quotechar=u"\u0000")
         user_inventory.sense_id = user_inventory.sense_id.astype(unicode)
         user_inventory.cluster = user_inventory.cluster.astype(unicode)
 
@@ -281,12 +282,14 @@ def evaluate_predicted_labels(user2twsi, lexsub_dataset_fpath, has_header=True):
 
     if has_header:
         lexsub_dataset = read_csv(lexsub_dataset_fpath, sep='\t', encoding='utf8',
-            dtype={'predict_sense_ids': np.unicode, 'gold_sense_ids': np.unicode, 'context_id': np.unicode} )
+            dtype={'predict_sense_ids': np.unicode, 'gold_sense_ids': np.unicode, 'context_id': np.unicode}, 
+            doublequote=False, quotechar=u"\u0000" )
     else:
         lexsub_dataset = read_csv(lexsub_dataset_fpath, sep='\t', encoding='utf8', header=None,
             names=["context_id","target","target_pos","target_position","gold_sense_ids","predict_sense_ids",
                    "golden_related","predict_related","context"],
-            dtype={'predict_sense_ids': np.unicode, 'gold_sense_ids': np.unicode, 'context_id': np.unicode})
+            dtype={'predict_sense_ids': np.unicode, 'gold_sense_ids': np.unicode, 'context_id': np.unicode}, 
+            doublequote=False, quotechar=u"\u0000")
     lexsub_dataset.predict_sense_ids = lexsub_dataset.predict_sense_ids.astype(unicode)
     lexsub_dataset.gold_sense_ids = lexsub_dataset.gold_sense_ids.astype(unicode)
     lexsub_dataset.context_id = lexsub_dataset.context_id.astype(unicode)

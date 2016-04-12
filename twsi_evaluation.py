@@ -410,7 +410,7 @@ def main():
     print ""
 
     extension = os.path.splitext(args.predictions)[1]
-    if extension == "csv":
+    if extension == ".csv" or extension == "csv":
         predictions_9cols_fpath = args.predictions + "-9cols.csv"
         many2nine(args.predictions, predictions_9cols_fpath)
     else:

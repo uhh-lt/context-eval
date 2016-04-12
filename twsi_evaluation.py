@@ -11,7 +11,8 @@ import codecs
 from collections import defaultdict, Counter
 import numpy as np
 from traceback import format_exc
-
+import os.path
+from direct_eval import many2nine
 
 DEBUG = False
 LIST_SEP = ','
@@ -408,8 +409,16 @@ def main():
     print "Verbose:", args.verbose
     print ""
 
+    extension = os.path.splitext(args.predictions)[1]
+    if extension == "csv":
+        predictions_9cols_fpath = args.predictions + "-9cols.csv"
+        many2nine(args.predictions, predictions_9cols_fpath)
+    else:
+        # if .gz cut is not possible
+        predictions_9cols_fpath = args.predictions
+
     user2twsi_mapping = map_sense_inventories(TWSI_INVENTORY, args.user_inventory)
-    correct, retrieved, count = evaluate_predicted_labels(user2twsi_mapping, args.predictions, has_header=(not args.no_header))
+    correct, retrieved, count = evaluate_predicted_labels(user2twsi_mapping, predictions_9cols_fpath, has_header=(not args.no_header))
 
     print "\nEvaluation Results:"
     print "Correct, retrieved, nr_sentences"

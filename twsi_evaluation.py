@@ -252,11 +252,11 @@ def map_sense_inventories(twsi_inventory_fpath, user_inventory_fpath):
     return user2twsi
 
 
-def get_best_id(predict_sense_ids):
+def get_best_id(predict_sense_ids, sep=","):
     """ Converts a string '1:0.9, 2:0.1' to '1', or just keeps the simple format the same e.g. '1' -> '1'. """
 
     try:
-        ids = predict_sense_ids.split(",")
+        ids = predict_sense_ids.split(sep)
         scores = Counter()
         for s in ids:
             p = s.split(":")

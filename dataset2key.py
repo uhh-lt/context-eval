@@ -1,10 +1,23 @@
 from pandas import read_csv
 import argparse
 import codecs
-from eval_lib import get_best_id, format_lexsample, FIELD_NAMES, FIELD_TYPES, LIST_SEP
+from eval_lib import get_best_id, format_lexsample, FIELD_NAMES, FIELD_TYPES, LIST_SEP, SCORE_SEP
 
 
 SEMEVAL_SEP = " "
+SEMEVAL_SCORE_SEP = "/"
+BEST_SENSE = True
+BEST_SENSE_WITH_SCORE = False
+
+
+def format_score(score):
+    """ Gets '0:-99.65' and returns '0:10.03' """
+
+    label, score = score.split(SCORE_SEP)
+    score = int(-100000.*(1/float(score)))
+
+    return "%s/%d" % (label, score)
+
 
 def convert_dataset2semevalkey(dataset_fpath, output_fpath, no_header=False):
     with codecs.open(output_fpath, "w", encoding="utf-8") as output:
@@ -18,7 +31,12 @@ def convert_dataset2semevalkey(dataset_fpath, output_fpath, no_header=False):
                     doublequote=False, quotechar='\0')
 
         for i, row in df.iterrows():
-            predicted_senses = get_best_id(unicode(row.predict_sense_ids))
+            if BEST_SENSE:
+                predicted_senses = get_best_id(unicode(row.predict_sense_ids))
+            elif BEST_SENSE_WITH_SCORE:
+                predicted_senses = format_score(get_best_id(unicode(row.predict_sense_ids), output_score=True))
+            else:
+                predicted_senses = SEMEVAL_SEP.join(format_score(s) for s in row.predict_sense_ids.split(LIST_SEP))
             print >> output, "%s %s %s" % (row.target + "." + row.target_pos, row.context_id, predicted_senses)
 
     print "Key file:", output_fpath

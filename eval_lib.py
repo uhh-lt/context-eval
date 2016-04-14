@@ -45,7 +45,7 @@ def doublespace2comma(csv_fpath, output_fpath):
     print "comma-separated file with 9 columns:", output_fpath
 
 
-def get_best_id(predict_sense_ids, sep=LIST_SEP):
+def get_best_id(predict_sense_ids, sep=LIST_SEP, output_score=False):
     """ Converts a string '1:0.9, 2:0.1' to '1', or just keeps the simple format the same e.g. '1' -> '1'. """
 
     try:
@@ -57,8 +57,10 @@ def get_best_id(predict_sense_ids, sep=LIST_SEP):
             conf = float(p[1]) if len(p) == 2 else 1.0
             scores[label] = conf
         major_label = scores.most_common(1)[0][0]
-
-        return major_label
+        if output_score:
+            return major_label + SCORE_SEP + unicode(scores[major_label])
+        else:
+            return major_label
     except:
         print predict_sense_ids
         print format_exc()

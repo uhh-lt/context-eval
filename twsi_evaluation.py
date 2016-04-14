@@ -12,7 +12,7 @@ from collections import defaultdict, Counter
 import numpy as np
 from traceback import format_exc
 import os.path
-from direct_eval import many2nine
+from direct_eval import many2nine, doublespace2comma
 
 DEBUG = False
 LIST_SEP = ','
@@ -412,7 +412,9 @@ def main():
     extension = os.path.splitext(args.predictions)[1]
     if extension == ".csv" or extension == "csv":
         predictions_9cols_fpath = args.predictions + "-9cols.csv"
-        many2nine(args.predictions, predictions_9cols_fpath)
+        tmp_fpath = predictions_9cols_fpath + ".tmp"
+        many2nine(args.predictions, tmp_fpath)
+        doublespace2comma(tmp_fpath, predictions_9cols_fpath)
     else:
         # if .gz cut is not possible
         predictions_9cols_fpath = args.predictions

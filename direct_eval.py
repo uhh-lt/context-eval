@@ -1,6 +1,6 @@
 import argparse
 from pandas import read_csv
-from plumbum.cmd import cut
+from plumbum.cmd import cut, sed
 
 
 ##############################################
@@ -36,6 +36,12 @@ def many2nine(csv_fpath, output_fpath):
     print "file with 9 columns:", output_fpath
 
 
+def doublespace2comma(csv_fpath, output_fpath):
+    replace = (sed["s/  /,/g"] > output_fpath)
+    replace(csv_fpath)
+    print "comma-separated file with 9 columns:", output_fpath
+
+
 def evaluate(lexsample_clasified_fpath):
     names=["context_id","target","target_pos","target_position","gold_sense_ids","predict_sense_ids","golden_related","predict_related","context"]
 
@@ -67,6 +73,7 @@ def main():
 
     nine_cols_fpath = args.lexsample + "-9cols"
     many2nine(args.lexsample, nine_cols_fpath)
+    doublespace2comma(nine_cols_fpath)
     evaluate(nine_cols_fpath)
 
 

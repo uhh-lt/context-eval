@@ -1,7 +1,7 @@
-import twsi_evaluation
+import twsi_eval
 import argparse
 from pandas import read_csv
-from twsi_evaluation import TWSI_INVENTORY, map_sense_inventories, calculate_evaluation_scores
+from twsi_eval import TWSI_INVENTORY, map_sense_inventories, calculate_evaluation_scores
 
 
 TWSI_DATASET = 'data/Dataset-TWSI-2.csv'

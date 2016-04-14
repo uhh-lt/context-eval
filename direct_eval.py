@@ -1,45 +1,6 @@
 import argparse
 from pandas import read_csv
-from plumbum.cmd import cut, sed
-
-
-##############################################
-# to be imported from:
-# from twsi_evaluation import get_best_id
-from collections import Counter
-from traceback import format_exc
-
-def get_best_id(predict_sense_ids, sep=","):
-    """ Converts a string '1:0.9, 2:0.1' to '1', or just keeps the simple format the same e.g. '1' -> '1'. """
-
-    try:
-        ids = predict_sense_ids.split(sep)
-        scores = Counter()
-        for s in ids:
-            p = s.split(":")
-            label = p[0]
-            conf = float(p[1]) if len(p) == 2 else 1.0
-            scores[label] = conf
-        major_label = scores.most_common(1)[0][0]
-
-        return major_label
-    except:
-        print predict_sense_ids
-        print format_exc()
-        return "-1"
-######################################
-
-
-def many2nine(csv_fpath, output_fpath):
-    cut_9cols = (cut["-f", "1-9"] > output_fpath)
-    cut_9cols(csv_fpath)
-    print "file with 9 columns:", output_fpath
-
-
-def doublespace2comma(csv_fpath, output_fpath):
-    replace = (sed["s/  /,/g"] > output_fpath)
-    replace(csv_fpath)
-    print "comma-separated file with 9 columns:", output_fpath
+from eval_lib import get_best_id, many2nine, doublespace2comma
 
 
 def evaluate(lexsample_clasified_fpath):

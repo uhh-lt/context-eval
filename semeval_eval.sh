@@ -14,7 +14,7 @@ sense_mapping=""  # or "--no-remapping" for wordnet sense identifiers .wn.
 header="--no_header"  # or "" if header is present
 
 
-python ./semeval_2013_13/dataset2key.py $system_dataset "$system_dataset.key" $header
+python dataset2key.py $system_dataset "$system_dataset.key" $header
 
 for metric in edu.ucla.clustercomparison.cl.JaccardIndexScorer edu.ucla.clustercomparison.cl.WeightedNdcgScorer  edu.ucla.clustercomparison.cl.WeightedTauScorer edu.ucla.clustercomparison.FuzzyNormalizedMutualInformation edu.ucla.clustercomparison.FuzzyBCubed
 do

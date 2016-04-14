@@ -10,13 +10,10 @@ from morph import is_stopword, tokenize
 import codecs
 from collections import defaultdict, Counter
 import numpy as np
-from traceback import format_exc
-import os.path
-from direct_eval import many2nine, doublespace2comma
+from eval_lib import get_best_id, format_lexsample, LIST_SEP, SCORE_SEP
+
 
 DEBUG = False
-LIST_SEP = ','
-SCORE_SEP = ':'
 TWSI_ASSIGNED_SENSES = "data/AssignedSenses-TWSI-2.csv"
 TWSI_INVENTORY = "data/Inventory-TWSI-2.csv"
 SPLIT_MWE=True
@@ -254,25 +251,6 @@ def map_sense_inventories(twsi_inventory_fpath, user_inventory_fpath):
     return user2twsi
 
 
-def get_best_id(predict_sense_ids, sep=","):
-    """ Converts a string '1:0.9, 2:0.1' to '1', or just keeps the simple format the same e.g. '1' -> '1'. """
-
-    try:
-        ids = predict_sense_ids.split(sep)
-        scores = Counter()
-        for s in ids:
-            p = s.split(":")
-            label = p[0]
-            conf = float(p[1]) if len(p) == 2 else 1.0
-            scores[label] = conf
-        major_label = scores.most_common(1)[0][0]
-
-        return major_label
-    except:
-        print predict_sense_ids
-        print format_exc()
-        return "-1"
-
 def evaluate_predicted_labels(user2twsi, lexsub_dataset_fpath, has_header=True):
     """ loads and evaluates the results """
 
@@ -395,7 +373,7 @@ def calculate_cosine(v1, v2):
 def main():
     parser = argparse.ArgumentParser(description='Evaluation script for contextualizations with a custom Word Sense Inventory.')
     parser.add_argument('user_inventory', metavar='inventory', help='word sense inventory file, format: "word<TAB>senseID<TAB>cluster", where cluster is a list of "word:score" separeted by ","')
-    parser.add_argument('predictions', help='word sense disambiguation predictions in the 9 column lexical sample format.')
+    parser.add_argument('lexsample', help='word sense disambiguation predictions in the 9 column lexical sample format.')
     parser.add_argument('--verbose', action='store_true', help='Display detailed information. Default -- false.')
     parser.add_argument('--no_header', action='store_true', help='No headers. Default -- false.')
     args = parser.parse_args()
@@ -404,23 +382,14 @@ def main():
     if args.verbose: DEBUG = args.verbose
 
     print "Sense inventory:", args.user_inventory
-    print "Lexical sample dataset:", args.predictions
+    print "Lexical sample dataset:", args.lexsample
     print "No header:", args.no_header
     print "Verbose:", args.verbose
     print ""
 
-    extension = os.path.splitext(args.predictions)[1]
-    if extension == ".csv" or extension == "csv":
-        predictions_9cols_fpath = args.predictions + "-9cols.csv"
-        tmp_fpath = predictions_9cols_fpath + ".tmp"
-        many2nine(args.predictions, tmp_fpath)
-        doublespace2comma(tmp_fpath, predictions_9cols_fpath)
-    else:
-        # if .gz cut is not possible
-        predictions_9cols_fpath = args.predictions
-
+    lexsample_9cols_fpath = format_lexsample(args.lexsample)
     user2twsi_mapping = map_sense_inventories(TWSI_INVENTORY, args.user_inventory)
-    correct, retrieved, count = evaluate_predicted_labels(user2twsi_mapping, predictions_9cols_fpath, has_header=(not args.no_header))
+    correct, retrieved, count = evaluate_predicted_labels(user2twsi_mapping, lexsample_9cols_fpath, has_header=(not args.no_header))
 
     print "\nEvaluation Results:"
     print "Correct, retrieved, nr_sentences"

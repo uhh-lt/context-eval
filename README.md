@@ -69,13 +69,13 @@ Evaluation
 5. Evaluate your predictions, based on your word sense inventory ```, e.g.:
 
     ```
-    python twsi_evaluation.py data/Inventory-TWSI-2.csv data/Dataset-TWSI-2-GOLD.csv.gz
+    python twsi_eval.py data/Inventory-TWSI-2.csv data/Dataset-TWSI-2-GOLD.csv.gz
     ```
 
     If your Dataset-TWSI-2-GOLD.csv file has no header then use the following argument:
     
     ```
-    python twsi_evaluation.py data/Inventory-TWSI-2.csv  data/Dataset-TWSI-2-GOLD-no-header.csv.gz --no_header
+    python twsi_eval.py data/Inventory-TWSI-2.csv  data/Dataset-TWSI-2-GOLD-no-header.csv.gz --no_header
     ```
 
     Results of the evaluations are printed to stdout. Most essential metrics are also printed to stderr. You should see something like this:

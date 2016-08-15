@@ -1,7 +1,7 @@
-import twsi_evaluation
+import twsi_eval
 import argparse
 from pandas import read_csv
-from twsi_evaluation import TWSI_INVENTORY, map_sense_inventories, calculate_evaluation_scores
+from twsi_eval import TWSI_INVENTORY, map_sense_inventories, calculate_evaluation_scores
 
 
 TWSI_DATASET = 'data/Dataset-TWSI-2.csv'
@@ -30,10 +30,11 @@ def evaluate_uppper_bound(twsi_dataset_fath, user2twsi):
 def main():
     parser = argparse.ArgumentParser(description='Estimation of the upper bound performance given the custom Word Sense Inventory.')
     parser.add_argument('user_inventory', metavar='sense-inventory', help='word sense inventory file, format:\n word_senseID <tab> list,of,words')
+    parser.add_argument('-predictions', help='word sense disambiguation predictions in the 9 column lexical sample format. By default use full Dataset-TWSI-2 set.', default=TWSI_DATASET)
     args = parser.parse_args()
 
     user2twsi = map_sense_inventories(TWSI_INVENTORY, args.user_inventory)
-    correct, count = evaluate_uppper_bound(TWSI_DATASET, user2twsi)
+    correct, count = evaluate_uppper_bound(args.predictions, user2twsi)
 
     print "\nUpper Bound Results:"
     print "Correct, retrieved, nr_sentences"

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 if [ "$#" -ne 2 ]; then
-    echo "usage: semeval_2013_13.sh <path-to-golden.key> <path-to-system.dataset>"
-    echo "example: semeval_2013_13.sh semeval_2013_13/keys/gold/all.key data/Dataset-SemEval-2013-13-adagram-ukwac-wacky-raw.csv"
+    echo "usage: semeval_eval.sh <path-to-golden.key> <path-to-system.dataset>"
+    echo "example: semeval_eval.sh semeval_2013_13/keys/gold/all.key data/Dataset-SemEval-2013-13-adagram-ukwac-wacky-raw.csv"
     exit
 fi
 

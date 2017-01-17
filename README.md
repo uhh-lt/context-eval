@@ -1,4 +1,4 @@
-This repository contains tools for evaluating the performance of unsupervised Word Sense Disambiguation (WSD) ~~and lexical substitution, the later is also known as "contextualization".~~
+This repository contains tools for evaluating the performance of unsupervised Word Sense Disambiguation (WSD).
 
 The scripts are based on the SemEval 2013 Task 13 dataset and the TWSI 2.0 dataset.
 
@@ -16,10 +16,23 @@ Setup
 1. Clone this repository.
 3. Install dependencies: `pip install -r requirements.txt`.
 
+TLDR
+====
+
+**TWSI: provide your sense inventory, fill the `predict_sense_ids` of the dataset and run :**
+```
+python twsi_eval.py data/Inventory-TWSI-2.csv data/Dataset-TWSI-2-GOLD.csv.gz
+```
+
+**SemEval 2013: fill the `predict_sense_ids` of the dataset and run**:
+```
+./semeval_eval.sh semeval_2013_13/keys/gold/all.key data/Dataset-SemEval-2013-13-adagram-ukwac-wacky-raw.csv
+```
+
 Run Evaluation
 ==============
 
-**TLDR; Just go to the respective tool, look for the dataset, fill the `predict_sense_ids` "by hand" and see the example invocation.**
+
 
 Two evaluation tools exist:
 

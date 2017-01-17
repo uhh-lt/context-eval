@@ -50,8 +50,7 @@ context_id	target	target_pos	target_position	gold_sense_ids	predict_sense_ids	go
 ## General invocation procedure
 
 The general procedure for both tools is to fill in the respective dataset the column `predict_sense_ids` "by hand" with the predicted sense identifiers of your system. And than provide this modified dataset to each tool.
-
-_TODO: Mention multiple ids and wether order has any relevance._
+Multiple ids can be inserted, the order has no relevance.
 
 Also note that if your system cannot confidently classify some contexts, you can, by setting the `predict_sense_ids` to `-1`, implement a "reject option".
 
@@ -62,7 +61,8 @@ Sense alignment is done by the usage of cluster grouping between your sense IDs 
 
 For a more detailed introduction to the SemEval 2013 Task 13 evaluation and dataset refer to: http://www.aclweb.org/website/old_anthology/S/S13/S13-2.pdf#page=326
 
-_TODO: mention [Cluster comparision tools](https://code.google.com/p/cluster-comparison-tools/) reference_
+See the original [cluster comparision tools](https://code.google.com/p/cluster-comparison-tools/) for SemEval 2013, which we simply use in this repository. 
+
 ### Invocation procedure
 
 1. Fill the dataset with your sense IDs (see General invocation procedure )

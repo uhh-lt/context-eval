@@ -48,6 +48,7 @@ This tool is based on the SemEval 2013 Task 13 **dataset**, which is located at 
 Sense alignment is done by the usage of cluster grouping between your sense IDs and the SemEval dataset senses. Hence the tool does not need any additional information about your senses.
 
 For a more detailed introduction to the SemEval 2013 Task 13 evaluation and dataset refer to: http://www.aclweb.org/website/old_anthology/S/S13/S13-2.pdf#page=326
+
 _TODO: mention [Cluster comparision tools](https://code.google.com/p/cluster-comparison-tools/) reference_
 ### Invocation procedure
 
@@ -77,7 +78,7 @@ For an in depth introduction to the TWSI word senses and their contextualized wo
 ### Invocation procedure
 
 1. Fill the dataset with your sense IDs (see General invocation procedure) and gzip it.
-2. Create a file containing the whole sense inventory your system uses of the following format: a tab separated CSV file, with no quoting and no escape character and the following columns: `word`, `sense_id`, `related_words`. The `related_words` column is a comma separated word list, where each word can have a colon separated weight, i.e. `list:5,of:3,related:1,words:1`.
+2. Create a file containing the whole sense inventory your system uses of the following format: a tab separated CSV file, with no quoting and no escape character and the following columns: `word`, `sense_id`, `related_words`. The `related_words` column is a comma separated word list, where each word can have a colon separated weight, i.e. `list:5,of:3,related:1,words:1`. And the `sense_id` must be numeric. 
     _Note: the file must be given without the header!_
 3. Provide both files from the previous two steps to the python script `twsi_eval.py`.
     _Note: in case your dataset file has no header, you can provide the `--no-header` flag!_

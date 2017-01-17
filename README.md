@@ -1,177 +1,98 @@
-Tools for Evaluation of Unsupervised Word Sense Disambiguation Systems
-====
+This repository contains tools for evaluating the performance of unsupervised Word Sense Disambiguation (WSD) ~~and lexical substitution, the later is also known as "contextualization".~~
 
-This repository contains tools for evaluation of unsupervised word sense disambiguation (WSD) and lexical substitution also known as systems aka "contextualization" system. The scripts are based on TWSI 2.0 and SemEval 2013 datasets.  
-
-```
-:'######:::'#######::'##::: ##:'########:'########:'##::::'##:'########:::::::'########:'##::::'##::::'###::::'##:::::::
-'##... ##:'##.... ##: ###:: ##:... ##..:: ##.....::. ##::'##::... ##..:::::::: ##.....:: ##:::: ##:::'## ##::: ##:::::::
- ##:::..:: ##:::: ##: ####: ##:::: ##:::: ##::::::::. ##'##:::::: ##:::::::::: ##::::::: ##:::: ##::'##:. ##:: ##:::::::
- ##::::::: ##:::: ##: ## ## ##:::: ##:::: ######:::::. ###::::::: ##::::'####: ######::: ##:::: ##:'##:::. ##: ##:::::::
- ##::::::: ##:::: ##: ##. ####:::: ##:::: ##...:::::: ## ##:::::: ##::::.....: ##...::::. ##:: ##:: #########: ##:::::::
- ##::: ##: ##:::: ##: ##:. ###:::: ##:::: ##:::::::: ##:. ##::::: ##:::::::::: ##::::::::. ## ##::: ##.... ##: ##:::::::
-. ######::. #######:: ##::. ##:::: ##:::: ########: ##:::. ##:::: ##:::::::::: ########:::. ###:::: ##:::: ##: ########:
-:......::::.......:::..::::..:::::..:::::........::..:::::..:::::..:::::::::::........:::::...:::::..:::::..::........::
-
-```
+The scripts are based on the SemEval 2013 Task 13 dataset and the TWSI 2.0 dataset.
 
 
-Installation
-============
+Setup
+=====
 
-1. Clone repository.
-2. Make sure that environment is setup: The default Python should be is 2.7. Currently Python 3 is not supported. The script was tested on Mac OSX and Linux. In principle, it should work on Windows under Cygwin. The script also requires Java 1.7 or higher. 
-3. Install dependencies: ```pip install pandas spacy```.
+## Prerequisites
+ - Python 2.7 (Python 3 is not supported) 
+ - Java 1.7 or higher
+ - Either Linux or Mac OS (for Windows users Cygwin might be an option, though it has not been tested)
 
+## Installation
 
-SemEval 2013 Task 13 Evaluation
-==================
+1. Clone this repository.
+3. Install dependencies: `pip install -r requirements.txt`.
 
-1. Fill column ```predict_sense_ids``` of the lexical sample dataset ```data/Dataset-SemEval-2013-13.csv```. Example of the result: https://github.com/tudarmstadt-lt/contextualization-eval/blob/master/data/Dataset-SemEval-2013-13-clean-lemma-model-alpha-05-norelated.csv
-
-2. Run the evaluation script:
-
-  ```
-  usage: semeval_2013_13.sh <path-to-golden.key> <path-to-system.dataset>
-  example: semeval_2013_13.sh semeval_2013_13/keys/gold/all.key data/Dataset-SemEval-2013-13-adagram-ukwac-wacky-raw.csv
-  ```
-
-  Evaluation scores will be printed to standard output. 
-
-  For more details about the this evaluation dataset refer to: http://www.aclweb.org/website/old_anthology/S/S13/S13-2.pdf#page=326
-
-TWSI Evaluation
+Run Evaluation
 ==============
 
-The tool evaluates Word Sense Disambiguation performance of a custom WSD system utilizing sentences and word senses (consisting of contextualized word substitutions) from the [Turk Bootstrap Word Sense Inventory TWSI 2.0](https://www.lt.informatik.tu-darmstadt.de/de/data/twsi-turk-bootstrap-word-sense-inventory/)
+**TLDR; Just go to the respective tool, look for the dataset, fill the `predict_sense_ids` "by hand" and see the example invocation.**
 
-First, it aligns the provided word sense inventory to TWSI senses. The alignment is calculated as the maximum overlap between related terms from a provided word sense to the substitutions from TWSI. After alignment, it calculates the precision, recall and F-score of the WSD system.
+Two evaluation tools exist:
 
+- one for the **SemEval 2013 Task 13 dataset** 
+- and the other for the **TWSI 2.0 dataset**. 
+ 
+Both tools handle sense alignment of the sense inventories between the provided datasets and your system senses differently. Please see the section of each tool for more information.
 
-Evaluation 
---------------------
-
-1. Clone repository:
-
-   ```
-    git clone https://github.com/tudarmstadt-lt/contextualization-eval.git
-    ```
-
-2. Install dependencies:
-    ```
-    pip install numpy scipy pandas
-    ```
-
-3. Fill with your program columns ```predict_sense_ids``` and ```predict_related``` in ```data/Dataset-TWSI-2.csv``` and save it (you can use as an example ```data/Dataset-TWSI-2-sample.csv```). The first one contains a list of relevant sense identifiers for a given context and the second contains a list of contextually semantically related words. Check columns ```golden_sense_ids``` and ```golden_related``` for example. Data formats: https://github.com/tudarmstadt-lt/contextualization-eval#input-data-format-datadataset-twsi-20csv. If your system cannot confidently classify some sense i.e. implements a "reject option" during classification you can set ```-1``` in the ```predict_sense_id```. In this case coverage of your system will be less than 0.999. 
-
-4. Create your word sense inventory needed for mapping senses to the gold standard word sense inventory. A sample file is available at: ```data/Inventory-sample.csv```
-
-5. Evaluate your predictions, based on your word sense inventory ```, e.g.:
-
-    ```
-    python twsi_eval.py data/Inventory-TWSI-2.csv data/Dataset-TWSI-2-GOLD.csv.gz
-    ```
-
-    If your Dataset-TWSI-2-GOLD.csv file has no header then use the following argument:
-    
-    ```
-    python twsi_eval.py data/Inventory-TWSI-2.csv  data/Dataset-TWSI-2-GOLD-no-header.csv.gz --no_header
-    ```
-
-    Results of the evaluations are printed to stdout. Most essential metrics are also printed to stderr. You should see something like this:
-
-    ```
-    Evaluation Results:
-    Correct, retrieved, nr_sentences
-    25465 	63801 	  142644
-    Precision: 0.399131675052 	Recall: 0.17852135386 	F1: 0.246700089612
-    Coverage:  0.447274333305
-    ```
-
-Data Format
----------------
-
-###Input data format: *data/Dataset-TWSI-2.0.csv*
-To be able to run different evaluation scripts, the TWSI 2.0 data needs to be converted into a different format. Int the *data/* folder, you will find the transformed TWSI data. 
+The schema of the datasets for both evaluation tools is however the same: a tab seperated CSV file, with no quoting and no escape character and the following headers:
 
 ```
-context_id  target-lemma   target_POS  target_position   gold_IDs predicted_IDs  gold_related_words   predicted_related_words context
-```
-####Example
-```
-10038908       ability n       160,169 1              aptitude:2, strength:4, talent:11, comprehension:1, function:2, competence:1, faculty:3, capability:33, capacity:29, skill:19             The following year , Harchester United reached the Semi Finals of the FA Cup and were also promoted back to the Premiership thanks to the fantastic goalscoring abilities of Karl Fletcher . 
-1418247        ability n       45,54   1              aptitude:2, strength:4, talent:11, comprehension:1, function:2, competence:1, faculty:3, capability:33, capacity:29, skill:19             He has also more than once overestimated his abilities or at times is often too naïve or cocky which usually results in a disadvantage during battle . 
-...
+context_id	target	target_pos	target_position	gold_sense_ids	predict_sense_ids	golden_related	predict_related	context
 ```
 
-###Word Sense Inventory: *data/word_sense_inventory.csv*
+## General invocation procedure
 
-The sense inventory should be in two columns. The first column contains the word lemma, the second column contains the sense identifier for the lemma.
-In the third columns, there is a list of related terms. Each of the related terms can be weighted by a number. These numbers are separated by colons ':'.
+The general procedure for both tools is to fill in the respective dataset the column `predict_sense_ids` "by hand" with the predicted sense identifiers of your system. And than provide this modified dataset to each tool.
 
-```
-Word  SenseID  list:5,of:3,related:1,words:1
-```
-####Example
-```
-mouse 0        mammalian:50,murine:20,Drosophila:10,human:9
-mouse 1        rat:200,mice:150,frog:80,sloth:50,rodent:40
-mouse 2        joystick:50,keyboard:33,monitor:25,simulation:15
-...
-```
-## TWSI Input data
+_TODO: Mention multiple ids and wether order has any relevance._
 
-### Contexts: data/data/TWSI-2.0-all-contexts.txt
+Also note that if your system cannot confidently classify some contexts, you can, by setting the `predict_sense_ids` to `-1`, implement a "reject option".
 
-We provide the contents from TWSI 2.0 in their original format (tab separated). In the provided file, we have compiled all the contexts that TWSI 2.0 offers.
+## SemEval 2013 Evaluation Tool
+This tool is based on the SemEval 2013 Task 13 **dataset**, which is located at `data/Dataset-SemEval-2013-13.csv`.
 
-Format:
+Sense alignment is done by the usage of cluster grouping between your sense IDs and the SemEval dataset senses. Hence the tool does not need any additional information about your senses.
 
-```
-TWSI_SenseID   target_word    surface_form     sentenceID   tokenized_sentence   confidence_score
-```
-The sentences are tokenized and contain a '\<b\>' tag around the target word. Additionally, the target word and its surface form are listed in separate columns.
+For a more detailed introduction to the SemEval 2013 Task 13 evaluation and dataset refer to: http://www.aclweb.org/website/old_anthology/S/S13/S13-2.pdf#page=326
 
-####Example
-```
-ability@@1  	ability  	abilities   	10038908	   The following year , Harchester United reached the Semi Finals of the FA Cup and were also promoted back to the Premiership thanks to the fantastic goalscoring <b>abilities</b> of Karl Fletcher . 	   1.0
+_TODO: mention [Cluster comparision tools](https://code.google.com/p/cluster-comparison-tools/) reference_
+### Invocation procedure
+
+1. Fill the dataset with your sense IDs (see General invocation procedure )
+   _Note: you must delete the headers!_
+2. Provide the dataset to the script `semeval_eval.sh` and also the SemEval sense keys (see example below)
+4. Results are printed to stdout
+
+#### Example invocation
+
+_Note: The files used here actually exist in the repository and you can use them for reference._
+
+```bash
+./semeval_eval.sh semeval_2013_13/keys/gold/all.key data/Dataset-SemEval-2013-13-adagram-ukwac-wacky-raw.csv
 ```
 
-#### Extraction
+Here the first argument `semeval_2013_13/keys/gold/all.key` however is a list of all gold senses and will always need to be exactly this file. The second argument `data/Dataset-SemEval-2013-13-adagram-ukwac-wacky-raw.csv` is the dataset filled with sense IDs and you should change it to your modified dataset.
 
-To extract this data, you can just concatenate all the .context files from TWSI:
-```
-cat path/to/TWSI2_complete/contexts/*.contexts > data/TWSI-2.0-all-contexts.txt
-```
+## TWSI 2.0 Evaluation Tool
 
-#### Conversion to common format
+This tool is based on the TWSI 2.0 **dataset**, which is located at `data/Dataset-SemEval-2013-13.csv`.
 
-To convert the TWSI format to the one used in our evaluation, you can use the utils/utils/transform-TWSI.pl script.
-It requires the TWSI contexts file as well as the TWSI sense inventory:
-```
-perl utils/transform-TWSI.pl data/TWSI-2.0-all-contexts.txt data/TWSI-2.0-sense-inventory.txt 
-```
+For sense alignment it requires you to provide a word sense inventory with related terms. The alignment is calculated as the maximum overlap between related terms from your word sense inventory to sense substitutions provided by TWSI.
 
+For an in depth introduction to the TWSI word senses and their contextualized word substitutions refer to https://www.lt.informatik.tu-darmstadt.de/de/data/twsi-turk-bootstrap-word-sense-inventory/
 
-### TWSI Sense Inventory: data/TWSI-2.0-sense-inventory.txt 
+### Invocation procedure
 
-The TWSI sense inventory follows the format for sense inventories: https://github.com/tudarmstadt-lt/contextualization-eval#word-sense-inventory-dataword_sense_inventorycsv
+1. Fill the dataset with your sense IDs (see General invocation procedure) and gzip it.
+2. Create a file containing the whole sense inventory your system uses of the following format: a tab separated CSV file, with no quoting and no escape character and the following columns: `word`, `sense_id`, `related_words`. The `related_words` column is a comma separated word list, where each word can have a colon separated weight, i.e. `list:5,of:3,related:1,words:1`. And the `sense_id` must be numeric. 
+    _Note: the file must be given without the header!_
+3. Provide both files from the previous two steps to the python script `twsi_eval.py`.
+    _Note: in case your dataset file has no header, you can provide the `--no-header` flag!_
+4. Results of the evaluations are printed to stdout. Most essential metrics are also printed to stderr.
 
-You can extract the TWSI sense inventory, by running the following command:
+#### Example invocation
 
-####Example
+_Note: The files used here actually exist in the repository and you can use them for reference._
 
-```
-academic@@1	scholastic:21, educational:13, scholarly:9, university:5
-academic@@2	school:3, educational:2, scholastic:2, school calendar:1
-academic@@3	scholar:35, professor:11, academician:10, teacher:9, lecturer:8
+```bash
+python twsi_eval.py data/Inventory-TWSI-2.csv data/Dataset-TWSI-2-GOLD.csv.gz
 ```
 
-####Extraction
-
-```
-find path/to/TWSI2_complete/substitutions/raw_data/all-substitutions/ -name \*.turk* | sort | xargs perl utils/extract-TWSI-inventory.pl > data/TWSI-2.0-sense-inventory.txt 
-```
+Here the first argument `data/Inventory-TWSI-2.csv` should contain the sense inventory of your system as described in the 2. point above. You need to change it. The second argument `data/Dataset-TWSI-2-GOLD.csv.gz` is the dataset filled with sense IDs and gzipped and of course you also need to change it to your modified dataset. 
 
 License
 -----------
